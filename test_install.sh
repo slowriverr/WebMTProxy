@@ -137,4 +137,21 @@ check "needs an index.html"       fails cmd_site "$work/site-a/assets"
 check "rejects a missing dir"     fails cmd_site "$work/nope"
 check "rejects publishing itself" fails cmd_site "$SITE_ROOT"
 
+# Carrier mode: the installer writes no carrier_mode key at all, so setting one
+# has to insert the field, and setting it again must not duplicate it.
+rm -f "$PROFILES"   # cmd_rotate left it 0400, as it is on a real install
+printf '{"profiles":[{"name":"default","secret":"%s","backend":"127.0.0.1:2398"}]}\n' \
+	"$new" > "$PROFILES"
+check "absent key reads default"  test "$(cmd_mode)" = "https (default)"
+
+cmd_mode websocket >/dev/null
+check "inserts the mode"          test "$(cmd_mode)" = websocket
+check "keeps the secret"          grep -qF "\"secret\":\"$new\"" "$PROFILES"
+check "keeps the backend"         grep -qF '"backend":"127.0.0.1:2398"' "$PROFILES"
+
+cmd_mode https-lanes >/dev/null
+check "replaces, not duplicates"  test "$(grep -co 'carrier_mode' "$PROFILES")" = 1
+check "reads the new mode"        test "$(cmd_mode)" = https-lanes
+check "rejects an unknown mode"   fails cmd_mode ws
+
 printf '\n  %d checks passed\n\n' "$ok"

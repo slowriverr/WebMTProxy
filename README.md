@@ -14,7 +14,7 @@
 <p align="center">
   <img alt="shell" src="https://img.shields.io/badge/shell-bash-4EAA25?logo=gnubash&logoColor=white">
   <img alt="platform" src="https://img.shields.io/badge/platform-Debian%20%7C%20Ubuntu%20x86__64-A81D33?logo=debian&logoColor=white">
-  <img alt="tests" src="https://img.shields.io/badge/tests-50%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-57%20passing-brightgreen">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-blue">
 </p>
 
@@ -118,6 +118,7 @@ $ sudo webmtproxy
     secret         dd7f3c1e9a2b48d05e6f81c34a9b2d7e
     email          you@example.com
     sponsor        none
+    carrier        https (default)
 
     https://t.me/webproxy?server=proxy.example.com&secret=dd7f3c1e…
 ```
@@ -130,6 +131,7 @@ $ sudo webmtproxy
 | `webmtproxy rotate-secret [HEX]` | new secret, restart, print the new link |
 | `webmtproxy sponsor [TAG]` | show, set, or clear (`off`) the sponsor channel tag |
 | `webmtproxy site [DIR]` | show the live cover site, or publish `DIR` as it |
+| `webmtproxy mode [MODE]` | carrier transport: `https`, `https-lanes`, `websocket`, `websocket-lanes` |
 | `webmtproxy restart` | restart every service |
 | `webmtproxy logs` | follow all journals |
 | `webmtproxy update` | pull the latest and rebuild |
@@ -153,6 +155,26 @@ line, so it survives updates. One caveat worth knowing: @MTProxybot registers a
 `host:port`, and here clients reach you over HTTPS on your domain rather than
 that port — the tag is passed to the backend, but treat sponsored-channel
 delivery as best-effort until you have seen it work.
+
+## Carrier transport
+
+The WebView can carry a session four ways. `https` is the default; the others
+trade a different traffic shape for the same payload, which matters when one
+shape is being throttled.
+
+```bash
+sudo webmtproxy mode websocket
+sudo webmtproxy mode              # what is set now
+```
+
+| Mode | Shape |
+| --- | --- |
+| `https` | one serialized HTTPS carrier |
+| `https-lanes` | independent HTTPS request lanes per logical session |
+| `websocket` | one multiplexed WebSocket |
+| `websocket-lanes` | an independent WebSocket per logical session |
+
+Clients pick the new mode up on their next session; nothing needs reinstalling.
 
 ## The cover website
 
@@ -184,8 +206,8 @@ also warns about the things the response policy blocks: inline `<style>` and
 ./test_install.sh
 ```
 
-50 checks over input validation, the install-time patch, secret rotation, the
-sponsor drop-in and site publishing.
+57 checks over input validation, the install-time patch, secret rotation, the
+sponsor drop-in, site publishing and carrier mode.
 Set `WEBMTPROXY_REPO` to point the bootstrap and `webmtproxy update` at a fork.
 
 ## Credits

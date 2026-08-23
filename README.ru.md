@@ -14,7 +14,7 @@
 <p align="center">
   <img alt="shell" src="https://img.shields.io/badge/shell-bash-4EAA25?logo=gnubash&logoColor=white">
   <img alt="platform" src="https://img.shields.io/badge/platform-Debian%20%7C%20Ubuntu%20x86__64-A81D33?logo=debian&logoColor=white">
-  <img alt="tests" src="https://img.shields.io/badge/tests-50%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-57%20passing-brightgreen">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-blue">
 </p>
 
@@ -119,6 +119,7 @@ $ sudo webmtproxy
     secret         dd7f3c1e9a2b48d05e6f81c34a9b2d7e
     email          you@example.com
     sponsor        none
+    carrier        https (default)
 
     https://t.me/webproxy?server=proxy.example.com&secret=dd7f3c1e…
 ```
@@ -131,6 +132,7 @@ $ sudo webmtproxy
 | `webmtproxy rotate-secret [HEX]` | новый секрет, перезапуск, новая ссылка |
 | `webmtproxy sponsor [TAG]` | показать, задать или убрать (`off`) тег спонсорского канала |
 | `webmtproxy site [DIR]` | показать текущий сайт-прикрытие или опубликовать `DIR` |
+| `webmtproxy mode [MODE]` | транспорт: `https`, `https-lanes`, `websocket`, `websocket-lanes` |
 | `webmtproxy restart` | перезапустить все сервисы |
 | `webmtproxy logs` | следить за всеми журналами |
 | `webmtproxy update` | получить свежую версию и пересобрать |
@@ -154,6 +156,26 @@ sudo webmtproxy sponsor off
 регистрирует `host:port`, а клиенты приходят по HTTPS на ваш домен, а не на этот
 порт — тег передаётся бэкенду, но до первой проверки считайте доставку
 спонсорского канала не гарантированной.
+
+## Транспорт
+
+WebView может нести сессию четырьмя способами. `https` — по умолчанию;
+остальные дают ту же полезную нагрузку с другой формой трафика, что важно,
+когда одну из форм режут.
+
+```bash
+sudo webmtproxy mode websocket
+sudo webmtproxy mode              # что задано сейчас
+```
+
+| Режим | Форма |
+| --- | --- |
+| `https` | один последовательный HTTPS-носитель |
+| `https-lanes` | независимые HTTPS-полосы на логическую сессию |
+| `websocket` | один мультиплексированный WebSocket |
+| `websocket-lanes` | отдельный WebSocket на логическую сессию |
+
+Клиенты подхватят новый режим в следующей сессии; переустановка не нужна.
 
 ## Сайт-прикрытие
 
@@ -185,7 +207,7 @@ sudo webmtproxy site                    # что отдаётся сейчас
 ./test_install.sh
 ```
 
-50 проверок: валидация ввода, патч во время установки, смена секрета, drop-in тега и публикация сайта.
+57 проверок: валидация ввода, патч во время установки, смена секрета, drop-in тега, публикация сайта и режим транспорта.
 Задайте `WEBMTPROXY_REPO`, чтобы bootstrap и `webmtproxy update` смотрели на форк.
 
 ## Благодарности

@@ -14,7 +14,7 @@
 <p align="center">
   <img alt="shell" src="https://img.shields.io/badge/shell-bash-4EAA25?logo=gnubash&logoColor=white">
   <img alt="platform" src="https://img.shields.io/badge/platform-Debian%20%7C%20Ubuntu%20x86__64-A81D33?logo=debian&logoColor=white">
-  <img alt="tests" src="https://img.shields.io/badge/tests-50%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-57%20passing-brightgreen">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-blue">
 </p>
 
@@ -136,6 +136,7 @@ $ sudo webmtproxy
     secret         dd7f3c1e9a2b48d05e6f81c34a9b2d7e
     email          you@example.com
     sponsor        none
+    carrier        https (default)
 
     https://t.me/webproxy?server=proxy.example.com&secret=dd7f3c1e…
 ```
@@ -150,6 +151,7 @@ $ sudo webmtproxy
 | `webmtproxy rotate-secret [HEX]` | سکرت جدید، ری‌استارت، چاپ لینک تازه |
 | `webmtproxy sponsor [TAG]` | نمایش، ست کردن، یا حذف (`off`) تگ کانال اسپانسر |
 | `webmtproxy site [DIR]` | نمایش سایت پوششی فعلی، یا پابلیش کردن `DIR` به‌جای آن |
+| `webmtproxy mode [MODE]` | مود کریر: `https`، `https-lanes`، `websocket`، `websocket-lanes` |
 | `webmtproxy restart` | ری‌استارت همه سرویس‌ها |
 | `webmtproxy logs` | دنبال‌کردن همه لاگ‌ها |
 | `webmtproxy update` | گرفتن آخرین نسخه و بیلد مجدد |
@@ -173,6 +175,30 @@ sudo webmtproxy sponsor off
 می‌کند، در حالی که اینجا کاربر از طریق HTTPS روی دامنه‌ات وصل می‌شود نه آن پورت —
 تگ به بک‌اند پاس داده می‌شود، ولی تا وقتی خودت کارکردنش را ندیده‌ای رویش حساب
 قطعی باز نکن.
+
+## مود کریر
+
+WebView می‌تواند نشست را به چهار شکل حمل کند. `https` پیش‌فرض است؛ بقیه همان
+دیتا را با شکل ترافیکی متفاوت می‌برند — وقتی یک شکل خاص throttle می‌شود به کار
+می‌آید.
+
+</div>
+
+```bash
+sudo webmtproxy mode websocket
+sudo webmtproxy mode              # الان چه چیزی ست است
+```
+
+<div dir="rtl">
+
+| مود | شکل ترافیک |
+| --- | --- |
+| `https` | یک کریر HTTPS سریالی |
+| `https-lanes` | لِین‌های HTTPS مستقل به‌ازای هر نشست منطقی |
+| `websocket` | یک وب‌سوکت مالتی‌پلکس |
+| `websocket-lanes` | یک وب‌سوکت مستقل به‌ازای هر نشست منطقی |
+
+کلاینت‌ها مود جدید را در نشست بعدی‌شان می‌گیرند؛ نیازی به نصب مجدد نیست.
 
 ## سایت پوششی
 
@@ -220,7 +246,7 @@ sudo webmtproxy site                    # الان چه چیزی سرو می‌�
 
 <div dir="rtl">
 
-۵۰ تست روی اعتبارسنجی ورودی‌ها، پچ زمان نصب، چرخش سکرت، drop-in تگ اسپانسر و پابلیش سایت. برای اینکه بوت‌استرپ و
+۵۷ تست روی اعتبارسنجی ورودی‌ها، پچ زمان نصب، چرخش سکرت، drop-in تگ اسپانسر، پابلیش سایت و مود کریر. برای اینکه بوت‌استرپ و
 `webmtproxy update` به فورک خودت اشاره کنند، `WEBMTPROXY_REPO` را ست کن.
 
 ## اعتبارها

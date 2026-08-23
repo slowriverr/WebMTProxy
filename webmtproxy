@@ -136,6 +136,7 @@ panel() {
 	field secret "$secret"
 	field email "$(read_email)"
 	field sponsor "$(read_tag || printf '%snone%s' "$D" "$R")"
+	field carrier "$(cmd_mode)"
 	printf '\n    %s%s%s\n' "$CYN" "$link" "$R"
 
 	printf '\n  %scommands%s  link · qr · rotate-secret · restart · logs · update · uninstall\n\n' "$D" "$R"
@@ -243,6 +244,34 @@ cmd_site() {
 	ok "$(find "$SITE_ROOT" -type f | wc -l | tr -d ' ') files published to $SITE_ROOT"
 }
 
+# carrier_mode lives per profile. The installer writes no key at all, which the
+# relay reads as the "https" default, so an absent key is reported as such and
+# setting a mode inserts the field rather than assuming it is there.
+cmd_mode() {
+	local mode=${1:-} tmp
+
+	if [[ -z "$mode" ]]; then
+		mode="$(sed -n 's/.*"carrier_mode"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$PROFILES")"
+		printf '%s\n' "${mode:-https (default)}"
+		return 0
+	fi
+
+	case "$mode" in
+		https|https-lanes|websocket|websocket-lanes) ;;
+		*) die "mode must be https, https-lanes, websocket or websocket-lanes" ;;
+	esac
+
+	tmp="$(mktemp "$PROFILES.XXXXXX")"
+	sed -e 's/,[[:space:]]*"carrier_mode"[[:space:]]*:[[:space:]]*"[^"]*"//g' \
+		-e "s/\(\"backend\"[[:space:]]*:[[:space:]]*\"[^\"]*\"\)/\1,\"carrier_mode\":\"$mode\"/g" \
+		"$PROFILES" > "$tmp"
+	grep -q "\"carrier_mode\":\"$mode\"" "$tmp" || { rm -f "$tmp"; die "could not rewrite $PROFILES"; }
+	chown root:tproxy "$tmp"; chmod 0400 "$tmp"; mv -f "$tmp" "$PROFILES"
+
+	systemctl restart tproxy-server
+	ok "carrier mode set to $mode — clients reconnect on their next session"
+}
+
 cmd_restart() {
 	local unit
 	for unit in mtproxy tproxy-server caddy; do
@@ -337,6 +366,8 @@ usage() {
 	    webmtproxy rotate-secret   new secret, restart, print the new link
 	    webmtproxy sponsor [TAG]   show, set or (with "off") clear the ad tag
 	    webmtproxy site [DIR]      show the cover site, or publish DIR as it
+	    webmtproxy mode [MODE]     carrier: https, https-lanes, websocket,
+	                               websocket-lanes
 	    webmtproxy restart         restart mtproxy, relay and Caddy
 	    webmtproxy logs            follow all three journals
 	    webmtproxy update          pull WebMTProxy, rebuild from upstream
@@ -355,6 +386,7 @@ case "${1:-panel}" in
 	rotate-secret)  require_root rotate-secret; require_install; cmd_rotate "${2:-}" ;;
 	sponsor)        require_root sponsor; require_install; cmd_sponsor "${2:-}" ;;
 	site)           require_root site; require_install; cmd_site "${2:-}" ;;
+	mode)           require_root mode; require_install; cmd_mode "${2:-}" ;;
 	restart)        require_root restart; require_install; cmd_restart ;;
 	logs)           require_root logs; cmd_logs ;;
 	update)         require_root update; require_install; cmd_update ;;
