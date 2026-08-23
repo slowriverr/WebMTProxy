@@ -1,3 +1,5 @@
+| `webmtproxy sponsor [TAG\|off]` | show, set or clear the sponsor channel tag |
+| `-t, --tag HEX` | sponsor channel tag from @MTProxybot (default: none) |
 <h1 align="center">WebMTProxy</h1>
 
 <p align="center">
@@ -13,7 +15,7 @@
 <p align="center">
   <img alt="shell" src="https://img.shields.io/badge/shell-bash-4EAA25?logo=gnubash&logoColor=white">
   <img alt="platform" src="https://img.shields.io/badge/platform-Debian%20%7C%20Ubuntu%20x86__64-A81D33?logo=debian&logoColor=white">
-  <img alt="tests" src="https://img.shields.io/badge/tests-32%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-41%20passing-brightgreen">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-blue">
 </p>
 
@@ -113,6 +115,7 @@ $ sudo webmtproxy
   ACCESS
     secret         dd7f3c1e9a2b48d05e6f81c34a9b2d7e
     email          you@example.com
+    sponsor        none
 
     https://t.me/webproxy?server=proxy.example.com&secret=dd7f3c1e…
 ```
@@ -131,6 +134,22 @@ $ sudo webmtproxy
 `uninstall` keeps `/srv/tproxy-site` and `/var/lib/caddy` unless you pass
 `--purge` — re-issuing certificates burns Let's Encrypt rate limits.
 
+## Sponsor channel
+
+Off by default. Register the proxy with [@MTProxybot](https://t.me/MTProxybot),
+take the tag it gives you, and:
+
+```bash
+sudo webmtproxy sponsor aabbccddeeff00112233445566778899
+sudo webmtproxy sponsor off
+```
+
+The tag is applied as a systemd drop-in rebuilt from the service's own command
+line, so it survives updates. One caveat worth knowing: @MTProxybot registers a
+`host:port`, and here clients reach you over HTTPS on your domain rather than
+that port — the tag is passed to the backend, but treat sponsored-channel
+delivery as best-effort until you have seen it work.
+
 ## The cover website
 
 Your hostname stays an ordinary HTTPS site. Only a request carrying the capability
@@ -148,7 +167,8 @@ sudo ./install.sh -d proxy.example.com -e you@example.com --site-dir /opt/my-sit
 ./test_install.sh
 ```
 
-32 checks over input validation, the install-time patch, and secret rotation.
+41 checks over input validation, the install-time patch, secret rotation and the
+sponsor drop-in.
 Set `WEBMTPROXY_REPO` to point the bootstrap and `webmtproxy update` at a fork.
 
 ## Credits

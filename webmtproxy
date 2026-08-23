@@ -10,6 +10,8 @@ CONFIG=/etc/tproxy-server/config.json
 PROFILES=/etc/tproxy-server/profiles.json
 MTPROXY_ENV=/etc/mtproxy/mtproxy.env
 CADDY_DROPIN=/etc/systemd/system/caddy.service.d/tproxy.conf
+MTPROXY_UNIT=/etc/systemd/system/mtproxy.service
+TAG_DROPIN=/etc/systemd/system/mtproxy.service.d/tag.conf
 SELF=/opt/webmtproxy
 UNITS=(caddy mtproxy tproxy-server tproxy-firewall)
 W=52
@@ -34,6 +36,7 @@ require_install() { [[ -f $CONFIG && -f $PROFILES ]] || die "no WebMTProxy insta
 read_domain() { sed -n 's/.*"public_hostname": *"\([^"]*\)".*/\1/p' "$CONFIG"; }
 read_secret() { sed -n 's/.*"secret": *"\([^"]*\)".*/\1/p' "$PROFILES"; }
 read_email()  { sed -n 's/^Environment=ACME_EMAIL=//p' "$CADDY_DROPIN" 2>/dev/null || true; }
+read_tag()    { sed -n 's/^Environment=MTPROXY_TAG=//p' "$TAG_DROPIN" 2>/dev/null | grep . || return 1; }
 tg_link()     { printf 'https://t.me/webproxy?server=%s&secret=%s' "$(read_domain)" "$(read_secret)"; }
 
 gen_secret() { openssl rand -hex 16 2>/dev/null || od -An -tx1 -N16 /dev/urandom | tr -d ' \n'; }
@@ -131,6 +134,7 @@ panel() {
 	head2 ACCESS
 	field secret "$secret"
 	field email "$(read_email)"
+	field sponsor "$(read_tag || printf '%snone%s' "$D" "$R")"
 	printf '\n    %s%s%s\n' "$CYN" "$link" "$R"
 
 	printf '\n  %scommands%s  link · qr · rotate-secret · restart · logs · update · uninstall\n\n' "$D" "$R"
@@ -139,6 +143,44 @@ panel() {
 # ── commands ─────────────────────────────────────────────────────────────────
 
 cmd_link() { tg_link; printf '\n'; }
+
+# The upstream unit has no -P flag. Rather than pin a copy of its ExecStart,
+# rebuild the override from whatever the unit currently ships, so it follows
+# upstream across updates instead of freezing a stale command line.
+cmd_sponsor() {
+	local tag=${1:-} exec_line
+	if [[ -z "$tag" ]]; then
+		printf '%s\n' "$(read_tag || echo none)"
+		return 0
+	fi
+	if [[ "$tag" == off || "$tag" == none ]]; then
+		rm -f "$TAG_DROPIN"
+		rmdir "$(dirname "$TAG_DROPIN")" 2>/dev/null || true
+		systemctl daemon-reload
+		systemctl restart mtproxy
+		ok "sponsor channel disabled"
+		return 0
+	fi
+
+	tag="$(printf '%s' "$tag" | tr '[:upper:]' '[:lower:]')"
+	[[ "$tag" =~ ^[0-9a-f]{32}$ ]] ||
+		die "tag must be 32 hex characters — get it from @MTProxybot"
+
+	exec_line="$(sed -n 's/^ExecStart=//p' "$MTPROXY_UNIT" | head -1)"
+	[[ -n "$exec_line" ]] || die "no ExecStart found in $MTPROXY_UNIT"
+
+	install -d -m 0755 "$(dirname "$TAG_DROPIN")"
+	cat > "$TAG_DROPIN" <<-EOF
+		[Service]
+		Environment=MTPROXY_TAG=$tag
+		ExecStart=
+		ExecStart=$exec_line -P \${MTPROXY_TAG}
+	EOF
+	chmod 0644 "$TAG_DROPIN"
+	systemctl daemon-reload
+	systemctl restart mtproxy
+	ok "sponsor channel tag set"
+}
 
 cmd_qr() {
 	command -v qrencode >/dev/null || die "qrencode is not installed: apt-get install -y qrencode"
@@ -239,6 +281,7 @@ usage() {
 	    webmtproxy link            print the t.me/webproxy link
 	    webmtproxy qr              print it as a QR code
 	    webmtproxy rotate-secret   new secret, restart, print the new link
+	    webmtproxy sponsor [TAG]   show, set or (with "off") clear the ad tag
 	    webmtproxy restart         restart mtproxy, relay and Caddy
 	    webmtproxy logs            follow all three journals
 	    webmtproxy update          pull WebMTProxy, rebuild from upstream
@@ -255,6 +298,7 @@ case "${1:-panel}" in
 	link)           require_root link; require_install; cmd_link ;;
 	qr)             require_root qr; require_install; cmd_qr ;;
 	rotate-secret)  require_root rotate-secret; require_install; cmd_rotate "${2:-}" ;;
+	sponsor)        require_root sponsor; require_install; cmd_sponsor "${2:-}" ;;
 	restart)        require_root restart; require_install; cmd_restart ;;
 	logs)           require_root logs; cmd_logs ;;
 	update)         require_root update; require_install; cmd_update ;;

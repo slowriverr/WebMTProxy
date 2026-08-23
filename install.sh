@@ -20,7 +20,7 @@ SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd -P)" || SELF_
 REPO="${WEBMTPROXY_REPO:-$(git -C "$SELF_DIR" remote get-url origin 2>/dev/null ||
 	echo https://github.com/slowriverr/WebMTProxy)}"
 
-domain=; email=; secret=; site_dir=; site_upstream=
+domain=; email=; secret=; tag=; site_dir=; site_upstream=
 workers=1; max_connections=4096; assume_yes=0; verbose=0
 
 if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
@@ -49,7 +49,8 @@ usage() {
 
 	    -d, --domain HOST          public hostname, e.g. proxy.example.com
 	    -e, --email ADDR           contact e-mail for Let's Encrypt
-	    -s, --secret HEX           32 hex chars, optionally dd-prefixed (default: random)
+	    -s, --secret HEX           32 hex chars, optionally dd-prefixed (default: asked)
+	    -t, --tag HEX              sponsor channel tag from @MTProxybot (default: none)
 	        --site-dir DIR         serve this directory as the cover website
 	        --site-upstream URL    proxy the cover website to http://127.0.0.1:PORT
 	        --workers N            MTProxy workers (default 1)
@@ -172,7 +173,7 @@ fail() {
 	exit 1
 }
 
-STEP=0; TOTAL=7
+STEP=0; TOTAL=8
 step() {
 	local msg=$1; shift
 	STEP=$((STEP + 1))
@@ -215,6 +216,7 @@ while [[ $# -gt 0 ]]; do
 		-d|--domain)          domain="${2:-}"; shift 2 ;;
 		-e|--email)           email="${2:-}"; shift 2 ;;
 		-s|--secret)          secret="${2:-}"; shift 2 ;;
+		-t|--tag)             tag="${2:-}"; shift 2 ;;
 		--site-dir)           site_dir="${2:-}"; shift 2 ;;
 		--site-upstream)      site_upstream="${2:-}"; shift 2 ;;
 		--workers)            workers="${2:-}"; shift 2 ;;
@@ -270,6 +272,15 @@ if [[ -z "$secret" ]]; then
 fi
 secret="$(printf '%s' "$secret" | tr '[:upper:]' '[:lower:]')"
 
+if [[ -z "$tag" ]] && [[ $assume_yes -eq 0 ]] && [[ -t 0 ]]; then
+	printf '  %s?%s Sponsor tag  %s[Enter] none · or the 32 hex tag from @MTProxybot%s ' \
+		"$CYN" "$R" "$D" "$R"
+	read -r tag </dev/tty || true
+	tag="${tag//[[:space:]]/}"
+fi
+tag="$(printf '%s' "$tag" | tr '[:upper:]' '[:lower:]')"
+[[ -z "$tag" || "$tag" =~ ^[0-9a-f]{32}$ ]] || die "--tag must be 32 hex characters"
+
 valid_domain "$domain" || die "hostname must be a lowercase ASCII DNS hostname with a dot"
 valid_email  "$email"  || die "a valid ACME contact e-mail is required"
 valid_secret "$secret" || die "secret must be 32 lowercase hex chars, optionally dd-prefixed"
@@ -310,6 +321,7 @@ printf '\n'
 printf '  %sDomain%s      %s\n' "$D" "$R" "$domain"
 printf '  %sE-mail%s      %s\n' "$D" "$R" "$email"
 printf '  %sSecret%s      %s\n' "$D" "$R" "$secret"
+printf '  %sSponsor%s     %s\n' "$D" "$R" "${tag:-none}"
 printf '  %sCover site%s  %s\n' "$D" "$R" "$site_label"
 printf '  %sMTProxy%s     %s worker(s), max %s connections\n' "$D" "$R" "$workers" "$max_connections"
 printf '  %sLog%s         %s\n\n' "$D" "$R" "$LOG"
@@ -334,6 +346,7 @@ step "Fetching tproxy-server"          fetch_upstream
 step "Patching the deploy script"      patch_umask
 step "Building MTProxy, relay and TLS" run_upstream
 step "Installing the webmtproxy panel" install_panel
+step "Configuring the sponsor channel" /usr/local/bin/webmtproxy sponsor "${tag:-off}"
 step "Verifying services"              verify
 
 # ── result ───────────────────────────────────────────────────────────────────

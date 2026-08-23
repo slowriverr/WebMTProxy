@@ -1,3 +1,5 @@
+| `webmtproxy sponsor [TAG\|off]` | показать, задать или убрать тег спонсорского канала |
+| `-t, --tag HEX` | тег спонсорского канала от @MTProxybot (по умолчанию нет) |
 <h1 align="center">WebMTProxy</h1>
 
 <p align="center">
@@ -13,7 +15,7 @@
 <p align="center">
   <img alt="shell" src="https://img.shields.io/badge/shell-bash-4EAA25?logo=gnubash&logoColor=white">
   <img alt="platform" src="https://img.shields.io/badge/platform-Debian%20%7C%20Ubuntu%20x86__64-A81D33?logo=debian&logoColor=white">
-  <img alt="tests" src="https://img.shields.io/badge/tests-32%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-41%20passing-brightgreen">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-blue">
 </p>
 
@@ -113,6 +115,7 @@ $ sudo webmtproxy
   ACCESS
     secret         dd7f3c1e9a2b48d05e6f81c34a9b2d7e
     email          you@example.com
+    sponsor        none
 
     https://t.me/webproxy?server=proxy.example.com&secret=dd7f3c1e…
 ```
@@ -131,6 +134,22 @@ $ sudo webmtproxy
 Без `--purge` удаление сохраняет `/srv/tproxy-site` и `/var/lib/caddy` —
 повторный выпуск сертификатов расходует лимиты Let's Encrypt.
 
+## Спонсорский канал
+
+По умолчанию выключен. Зарегистрируйте прокси в
+[@MTProxybot](https://t.me/MTProxybot), возьмите выданный тег и:
+
+```bash
+sudo webmtproxy sponsor aabbccddeeff00112233445566778899
+sudo webmtproxy sponsor off
+```
+
+Тег применяется systemd-дропином, который пересобирается из собственной команды
+запуска сервиса, поэтому переживает обновления. Важный нюанс: @MTProxybot
+регистрирует `host:port`, а клиенты приходят по HTTPS на ваш домен, а не на этот
+порт — тег передаётся бэкенду, но до первой проверки считайте доставку
+спонсорского канала не гарантированной.
+
 ## Сайт-прикрытие
 
 Ваш домен остаётся обычным HTTPS-сайтом. До прокси доходит только запрос с
@@ -148,7 +167,7 @@ sudo ./install.sh -d proxy.example.com -e you@example.com --site-dir /opt/my-sit
 ./test_install.sh
 ```
 
-32 проверки: валидация ввода, патч во время установки, смена секрета.
+41 проверка: валидация ввода, патч во время установки, смена секрета и drop-in тега.
 Задайте `WEBMTPROXY_REPO`, чтобы bootstrap и `webmtproxy update` смотрели на форк.
 
 ## Благодарности

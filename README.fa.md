@@ -1,3 +1,5 @@
+| `webmtproxy sponsor [TAG\|off]` | نمایش، ست یا حذف تگ کانال اسپانسر |
+| `-t, --tag HEX` | تگ کانال اسپانسر از @MTProxybot (پیش‌فرض: ندارد) |
 <h1 align="center">WebMTProxy</h1>
 
 <p align="center">
@@ -13,7 +15,7 @@
 <p align="center">
   <img alt="shell" src="https://img.shields.io/badge/shell-bash-4EAA25?logo=gnubash&logoColor=white">
   <img alt="platform" src="https://img.shields.io/badge/platform-Debian%20%7C%20Ubuntu%20x86__64-A81D33?logo=debian&logoColor=white">
-  <img alt="tests" src="https://img.shields.io/badge/tests-32%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-41%20passing-brightgreen">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-blue">
 </p>
 
@@ -130,6 +132,7 @@ $ sudo webmtproxy
   ACCESS
     secret         dd7f3c1e9a2b48d05e6f81c34a9b2d7e
     email          you@example.com
+    sponsor        none
 
     https://t.me/webproxy?server=proxy.example.com&secret=dd7f3c1e…
 ```
@@ -149,6 +152,22 @@ $ sudo webmtproxy
 
 `uninstall` بدون `--purge` مسیرهای `/srv/tproxy-site` و `/var/lib/caddy` را نگه
 می‌دارد؛ صدور دوباره گواهی سهمیه Let's Encrypt را می‌سوزاند.
+
+## کانال اسپانسر
+
+پیش‌فرض خاموش است. پروکسی را در [@MTProxybot](https://t.me/MTProxybot) ثبت کن،
+تگی که می‌دهد را بردار و:
+
+```bash
+sudo webmtproxy sponsor aabbccddeeff00112233445566778899
+sudo webmtproxy sponsor off
+```
+
+تگ به‌شکل یک drop-in سیستم‌دی اعمال می‌شود که از روی خط فرمان خود سرویس ساخته
+می‌شود، پس با آپدیت‌ها از بین نمی‌رود. یک نکته: @MTProxybot یک `host:port` ثبت
+می‌کند، در حالی که اینجا کاربر از طریق HTTPS روی دامنه‌ات وصل می‌شود نه آن پورت —
+تگ به بک‌اند پاس داده می‌شود، ولی تا وقتی خودت کارکردنش را ندیده‌ای رویش حساب
+قطعی باز نکن.
 
 ## سایت پوششی
 
@@ -175,7 +194,7 @@ sudo ./install.sh -d proxy.example.com -e you@example.com --site-dir /opt/my-sit
 
 <div dir="rtl">
 
-۳۲ تست روی اعتبارسنجی ورودی‌ها، پچ زمان نصب و چرخش سکرت. برای اینکه بوت‌استرپ و
+۴۱ تست روی اعتبارسنجی ورودی‌ها، پچ زمان نصب، چرخش سکرت و drop-in تگ اسپانسر. برای اینکه بوت‌استرپ و
 `webmtproxy update` به فورک خودت اشاره کنند، `WEBMTPROXY_REPO` را ست کن.
 
 ## اعتبارها

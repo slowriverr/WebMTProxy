@@ -12,6 +12,8 @@ check() { # check "what" <boolean command>
 	else printf '  FAIL %s\n' "$what"; exit 1; fi
 }
 no() { ! "$@"; }
+# For functions that exit on error: a subshell still sees them, unlike `bash -c`.
+fails() { ! ( "$@" ) >/dev/null 2>&1; }
 
 check "accepts a hostname"          valid_domain proxy.example.com
 check "rejects a bare label"        no valid_domain localhost
@@ -87,9 +89,30 @@ check "relay keeps the dd prefix" grep -qF "\"secret\":\"$new\"" "$PROFILES"
 check "relay keeps the backend"   grep -qF '"backend":"127.0.0.1:2398"' "$PROFILES"
 check "MTProxy gets bare hex"     grep -qx 'MTPROXY_SECRET=11111111111111111111111111111111' "$MTPROXY_ENV"
 check "MTProxy keeps its workers" grep -qx 'MTPROXY_WORKERS=1' "$MTPROXY_ENV"
-check "rejects a bad secret"      no bash -c 'cmd_rotate nothex' 2>/dev/null
+check "rejects a bad secret"      fails cmd_rotate nothex
 
 check "reads the hostname" test "$(read_domain)" = proxy.example.com
 check "builds the link"    test "$(tg_link)" = "https://t.me/webproxy?server=proxy.example.com&secret=$new"
+
+# The sponsor tag is a systemd drop-in rebuilt from the unit's own ExecStart,
+# so it must carry the upstream command line through unchanged and append -P.
+MTPROXY_UNIT="$work/mtproxy.service"
+TAG_DROPIN="$work/dropin.d/tag.conf"
+printf '[Service]\nExecStart=/opt/MTProxy/objs/bin/mtproto-proxy -S ${MTPROXY_SECRET} -M 1\n' > "$MTPROXY_UNIT"
+
+tag=aabbccddeeff00112233445566778899
+cmd_sponsor "$tag" >/dev/null
+check "drop-in clears ExecStart"  grep -qx 'ExecStart=' "$TAG_DROPIN"
+check "drop-in keeps upstream"    grep -qF '/opt/MTProxy/objs/bin/mtproto-proxy -S ${MTPROXY_SECRET} -M 1 -P ${MTPROXY_TAG}' "$TAG_DROPIN"
+check "drop-in sets the tag"      grep -qx "Environment=MTPROXY_TAG=$tag" "$TAG_DROPIN"
+check "reads the tag back"        test "$(read_tag)" = "$tag"
+cmd_sponsor AABBCCDDEEFF00112233445566778899 >/dev/null
+check "uppercase tag lowercased"  test "$(read_tag)" = "$tag"
+check "rejects a short tag"       fails cmd_sponsor abc123
+check "rejects a dd-prefixed tag" fails cmd_sponsor "dd$tag"
+
+cmd_sponsor off >/dev/null
+check "off removes the drop-in"   test ! -e "$TAG_DROPIN"
+check "no tag reads as absent"    no read_tag
 
 printf '\n  %d checks passed\n\n' "$ok"
