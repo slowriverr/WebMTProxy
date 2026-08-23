@@ -10,6 +10,7 @@ CONFIG=/etc/tproxy-server/config.json
 PROFILES=/etc/tproxy-server/profiles.json
 MTPROXY_ENV=/etc/mtproxy/mtproxy.env
 CADDY_DROPIN=/etc/systemd/system/caddy.service.d/tproxy.conf
+SITE_ROOT=/srv/tproxy-site
 MTPROXY_UNIT=/etc/systemd/system/mtproxy.service
 TAG_DROPIN=/etc/systemd/system/mtproxy.service.d/tag.conf
 SELF=/opt/webmtproxy
@@ -189,6 +190,59 @@ cmd_qr() {
 	printf '  %s%s%s\n\n' "$CYN" "$(tg_link)" "$R"
 }
 
+# The relay loads the whole site into memory at startup, so publishing means
+# replacing the directory and restarting — editing the install-time source
+# directory does nothing, which is the trap this command exists to remove.
+cmd_site() {
+	local src=${1:-} dest backup tags
+
+	if [[ -z "$src" ]]; then
+		local upstream dir
+		upstream="$(sed -n 's/.*"public_upstream": *"\([^"]*\)".*/\1/p' "$CONFIG")"
+		if [[ -n "$upstream" ]]; then
+			printf 'upstream %s\n' "$upstream"
+		else
+			dir="$(sed -n 's/.*"public_dir": *"\([^"]*\)".*/\1/p' "$CONFIG")"
+			printf '%s (%s files)\n' "${dir:-unset}" \
+				"$(find "${dir:-/nonexistent}" -type f 2>/dev/null | wc -l | tr -d ' ')"
+		fi
+		return 0
+	fi
+
+	[[ -d "$src" ]] || die "no such directory: $src"
+	src="$(cd "$src" && pwd -P)"
+	# Compare resolved paths: publishing the live directory onto itself would
+	# move it aside and then copy from a source that no longer exists.
+	dest="$SITE_ROOT"
+	[[ -d "$dest" ]] && dest="$(cd "$dest" && pwd -P)"
+	[[ "$src" != "$dest" ]] || die "source and destination are the same directory"
+	[[ -f "$src/index.html" && -r "$src/index.html" ]] ||
+		die "$src must contain a readable index.html — the relay will not start without it"
+
+	# Warnings only. These break the page in the browser, not the relay, and the
+	# relay's own response policy is the authority on what survives.
+	grep -rlE '<style[ >]' --include='*.html' "$src" >/dev/null 2>&1 &&
+		warn "inline <style> found — blocked; move it to an external stylesheet"
+	tags="$(grep -rhoE '<script[^>]*>' --include='*.html' "$src" 2>/dev/null | grep -cv 'src=' || true)"
+	((tags == 0)) || warn "$tags inline <script> tag(s) — blocked; use same-origin external files"
+	grep -rlE '(src|href)="https?://' --include='*.html' "$src" >/dev/null 2>&1 &&
+		warn "external resources referenced — only same-origin loads are allowed"
+	[[ -z "$(find "$src" -type l -print -quit)" ]] ||
+		warn "symlinks found — they are not served"
+
+	if [[ -e "$SITE_ROOT" ]]; then
+		backup="$SITE_ROOT.bak.$(date +%Y%m%d%H%M%S)"
+		mv "$SITE_ROOT" "$backup"
+		ok "previous site kept at $backup"
+	fi
+	install -d -m 0755 "$SITE_ROOT"
+	cp -a "$src/." "$SITE_ROOT/"
+	chown -R root:root "$SITE_ROOT"
+	chmod -R a+rX "$SITE_ROOT"
+	systemctl restart tproxy-server
+	ok "$(find "$SITE_ROOT" -type f | wc -l | tr -d ' ') files published to $SITE_ROOT"
+}
+
 cmd_restart() {
 	local unit
 	for unit in mtproxy tproxy-server caddy; do
@@ -282,6 +336,7 @@ usage() {
 	    webmtproxy qr              print it as a QR code
 	    webmtproxy rotate-secret   new secret, restart, print the new link
 	    webmtproxy sponsor [TAG]   show, set or (with "off") clear the ad tag
+	    webmtproxy site [DIR]      show the cover site, or publish DIR as it
 	    webmtproxy restart         restart mtproxy, relay and Caddy
 	    webmtproxy logs            follow all three journals
 	    webmtproxy update          pull WebMTProxy, rebuild from upstream
@@ -299,6 +354,7 @@ case "${1:-panel}" in
 	qr)             require_root qr; require_install; cmd_qr ;;
 	rotate-secret)  require_root rotate-secret; require_install; cmd_rotate "${2:-}" ;;
 	sponsor)        require_root sponsor; require_install; cmd_sponsor "${2:-}" ;;
+	site)           require_root site; require_install; cmd_site "${2:-}" ;;
 	restart)        require_root restart; require_install; cmd_restart ;;
 	logs)           require_root logs; cmd_logs ;;
 	update)         require_root update; require_install; cmd_update ;;

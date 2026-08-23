@@ -14,7 +14,7 @@
 <p align="center">
   <img alt="shell" src="https://img.shields.io/badge/shell-bash-4EAA25?logo=gnubash&logoColor=white">
   <img alt="platform" src="https://img.shields.io/badge/platform-Debian%20%7C%20Ubuntu%20x86__64-A81D33?logo=debian&logoColor=white">
-  <img alt="tests" src="https://img.shields.io/badge/tests-41%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-50%20passing-brightgreen">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-blue">
 </p>
 
@@ -129,6 +129,7 @@ $ sudo webmtproxy
 | `webmtproxy qr` | print it as a QR code |
 | `webmtproxy rotate-secret [HEX]` | new secret, restart, print the new link |
 | `webmtproxy sponsor [TAG]` | show, set, or clear (`off`) the sponsor channel tag |
+| `webmtproxy site [DIR]` | show the live cover site, or publish `DIR` as it |
 | `webmtproxy restart` | restart every service |
 | `webmtproxy logs` | follow all journals |
 | `webmtproxy update` | pull the latest and rebuild |
@@ -164,14 +165,27 @@ tell — point `--site-dir` at something plausible.
 sudo ./install.sh -d proxy.example.com -e you@example.com --site-dir /opt/my-site
 ```
 
+To change it later, publish a directory over the live one:
+
+```bash
+sudo webmtproxy site /opt/my-site
+sudo webmtproxy site                    # what is live right now
+```
+
+The relay loads the whole site into memory at startup, so editing the directory
+you installed from changes nothing — `site` replaces the live copy, keeps the
+previous one at `/srv/tproxy-site.bak.<timestamp>`, and restarts the relay. It
+also warns about the things the response policy blocks: inline `<style>` and
+`<script>`, external resources, and symlinks.
+
 ## Development
 
 ```bash
 ./test_install.sh
 ```
 
-41 checks over input validation, the install-time patch, secret rotation and the
-sponsor drop-in.
+50 checks over input validation, the install-time patch, secret rotation, the
+sponsor drop-in and site publishing.
 Set `WEBMTPROXY_REPO` to point the bootstrap and `webmtproxy update` at a fork.
 
 ## Credits

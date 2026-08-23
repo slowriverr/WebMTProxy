@@ -14,7 +14,7 @@
 <p align="center">
   <img alt="shell" src="https://img.shields.io/badge/shell-bash-4EAA25?logo=gnubash&logoColor=white">
   <img alt="platform" src="https://img.shields.io/badge/platform-Debian%20%7C%20Ubuntu%20x86__64-A81D33?logo=debian&logoColor=white">
-  <img alt="tests" src="https://img.shields.io/badge/tests-41%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-50%20passing-brightgreen">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-blue">
 </p>
 
@@ -149,6 +149,7 @@ $ sudo webmtproxy
 | `webmtproxy qr` | چاپ همان لینک به شکل QR |
 | `webmtproxy rotate-secret [HEX]` | سکرت جدید، ری‌استارت، چاپ لینک تازه |
 | `webmtproxy sponsor [TAG]` | نمایش، ست کردن، یا حذف (`off`) تگ کانال اسپانسر |
+| `webmtproxy site [DIR]` | نمایش سایت پوششی فعلی، یا پابلیش کردن `DIR` به‌جای آن |
 | `webmtproxy restart` | ری‌استارت همه سرویس‌ها |
 | `webmtproxy logs` | دنبال‌کردن همه لاگ‌ها |
 | `webmtproxy update` | گرفتن آخرین نسخه و بیلد مجدد |
@@ -188,6 +189,27 @@ sudo ./install.sh -d proxy.example.com -e you@example.com --site-dir /opt/my-sit
 
 <div dir="rtl">
 
+برای تعویض بعد از نصب، یک پوشه را روی نسخه‌ی زنده پابلیش کن:
+
+</div>
+
+```bash
+sudo webmtproxy site /opt/my-site
+sudo webmtproxy site                    # الان چه چیزی سرو می‌شود
+```
+
+<div dir="rtl">
+
+رله کل سایت را موقع استارت به حافظه لود می‌کند، پس ویرایش همان پوشه‌ای که از آن
+نصب کردی هیچ اثری ندارد. `site` نسخه‌ی زنده را جایگزین می‌کند، قبلی را در
+`/srv/tproxy-site.bak.<timestamp>` نگه می‌دارد و رله را ری‌استارت می‌کند. درباره‌ی
+چیزهایی که سیاست پاسخ بلاک می‌کند هم هشدار می‌دهد: inline `<style>` و `<script>`،
+منابع خارجی، و symlink.
+
+</div>
+
+<div dir="rtl">
+
 ## توسعه
 
 </div>
@@ -198,7 +220,7 @@ sudo ./install.sh -d proxy.example.com -e you@example.com --site-dir /opt/my-sit
 
 <div dir="rtl">
 
-۴۱ تست روی اعتبارسنجی ورودی‌ها، پچ زمان نصب، چرخش سکرت و drop-in تگ اسپانسر. برای اینکه بوت‌استرپ و
+۵۰ تست روی اعتبارسنجی ورودی‌ها، پچ زمان نصب، چرخش سکرت، drop-in تگ اسپانسر و پابلیش سایت. برای اینکه بوت‌استرپ و
 `webmtproxy update` به فورک خودت اشاره کنند، `WEBMTPROXY_REPO` را ست کن.
 
 ## اعتبارها

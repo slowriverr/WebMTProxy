@@ -115,4 +115,26 @@ cmd_sponsor off >/dev/null
 check "off removes the drop-in"   test ! -e "$TAG_DROPIN"
 check "no tag reads as absent"    no read_tag
 
+# Publishing a cover site: the live directory is replaced, not the source.
+SITE_ROOT="$work/srv-site"
+printf '{\n  "public_hostname": "proxy.example.com",\n  "public_dir": "%s"\n}\n' "$SITE_ROOT" > "$CONFIG"
+mkdir -p "$work/site-a/assets" "$work/site-b"
+printf '<!doctype html><html><head><link rel="stylesheet" href="/s.css"></head><body>A</body></html>\n' > "$work/site-a/index.html"
+printf 'body{margin:0}\n' > "$work/site-a/assets/s.css"
+printf '<!doctype html><html><body>B</body></html>\n' > "$work/site-b/index.html"
+
+cmd_site "$work/site-a" >/dev/null
+check "publishes index.html"      grep -q '>A<' "$SITE_ROOT/index.html"
+check "publishes nested assets"   test -f "$SITE_ROOT/assets/s.css"
+check "reports the live dir"      test "$(cmd_site)" = "$SITE_ROOT (2 files)"
+
+cmd_site "$work/site-b" >/dev/null
+check "replaces the old site"     grep -q '>B<' "$SITE_ROOT/index.html"
+check "drops the old assets"      test ! -e "$SITE_ROOT/assets/s.css"
+check "keeps a backup"            test -n "$(find "$work" -maxdepth 1 -name 'srv-site.bak.*' -print -quit)"
+
+check "needs an index.html"       fails cmd_site "$work/site-a/assets"
+check "rejects a missing dir"     fails cmd_site "$work/nope"
+check "rejects publishing itself" fails cmd_site "$SITE_ROOT"
+
 printf '\n  %d checks passed\n\n' "$ok"

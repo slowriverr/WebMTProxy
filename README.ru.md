@@ -14,7 +14,7 @@
 <p align="center">
   <img alt="shell" src="https://img.shields.io/badge/shell-bash-4EAA25?logo=gnubash&logoColor=white">
   <img alt="platform" src="https://img.shields.io/badge/platform-Debian%20%7C%20Ubuntu%20x86__64-A81D33?logo=debian&logoColor=white">
-  <img alt="tests" src="https://img.shields.io/badge/tests-41%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-50%20passing-brightgreen">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-blue">
 </p>
 
@@ -130,6 +130,7 @@ $ sudo webmtproxy
 | `webmtproxy qr` | вывести её в виде QR-кода |
 | `webmtproxy rotate-secret [HEX]` | новый секрет, перезапуск, новая ссылка |
 | `webmtproxy sponsor [TAG]` | показать, задать или убрать (`off`) тег спонсорского канала |
+| `webmtproxy site [DIR]` | показать текущий сайт-прикрытие или опубликовать `DIR` |
 | `webmtproxy restart` | перезапустить все сервисы |
 | `webmtproxy logs` | следить за всеми журналами |
 | `webmtproxy update` | получить свежую версию и пересобрать |
@@ -165,13 +166,26 @@ sudo webmtproxy sponsor off
 sudo ./install.sh -d proxy.example.com -e you@example.com --site-dir /opt/my-site
 ```
 
+Чтобы поменять его позже, опубликуйте каталог поверх рабочего:
+
+```bash
+sudo webmtproxy site /opt/my-site
+sudo webmtproxy site                    # что отдаётся сейчас
+```
+
+Релей загружает весь сайт в память при старте, поэтому правка каталога, из
+которого вы устанавливали, ничего не меняет. `site` заменяет рабочую копию,
+сохраняет прежнюю в `/srv/tproxy-site.bak.<timestamp>` и перезапускает релей.
+Он также предупреждает о том, что блокирует политика ответов: inline `<style>`
+и `<script>`, внешние ресурсы и симлинки.
+
 ## Разработка
 
 ```bash
 ./test_install.sh
 ```
 
-41 проверка: валидация ввода, патч во время установки, смена секрета и drop-in тега.
+50 проверок: валидация ввода, патч во время установки, смена секрета, drop-in тега и публикация сайта.
 Задайте `WEBMTPROXY_REPO`, чтобы bootstrap и `webmtproxy update` смотрели на форк.
 
 ## Благодарности
