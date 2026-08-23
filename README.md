@@ -1,7 +1,8 @@
 <h1 align="center">WebMTProxy</h1>
 
 <p align="center">
-  Telegram's new <b>WEB proxy</b> on a fresh server — one command, then a CLI panel.
+  Telegram's new <b>WEB proxy</b>, installed in one command —
+  with a CLI panel and <b>sponsor channel</b> support.
 </p>
 
 <p align="center">
@@ -34,6 +35,8 @@ gets a TLS certificate, and hands you a `t.me/webproxy` link and a QR code.
   anything is touched.
 - **Works on the first try.** A permissions bug that otherwise leaves the proxy
   dead on arrival is patched during install.
+- **Sponsor channel.** Attach an [@MTProxybot](https://t.me/MTProxybot) ad tag —
+  the upstream deploy has no flag for it. Off by default, one command to change.
 - **A real panel.** Service health, TLS expiry, live connections, secret rotation,
   logs, updates, clean uninstall.
 - **No hidden state.** The panel reads everything from the live config files.
