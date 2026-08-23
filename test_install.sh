@@ -154,4 +154,21 @@ check "replaces, not duplicates"  test "$(grep -co 'carrier_mode' "$PROFILES")" 
 check "reads the new mode"        test "$(cmd_mode)" = https-lanes
 check "rejects an unknown mode"   fails cmd_mode ws
 
+# Changing the hostname must touch both the relay config and the Caddy drop-in,
+# and must refuse a name that does not point here unless forced.
+CADDY_DROPIN="$work/caddy-tproxy.conf"
+printf 'Environment=TPROXY_HOSTNAME=proxy.example.com\nEnvironment=ACME_EMAIL=you@example.com\n' > "$CADDY_DROPIN"
+getent() { return 1; }   # nothing resolves, so the DNS guard is active
+
+check "shows the hostname"        test "$(cmd_domain)" = proxy.example.com
+check "refuses unresolved names"  fails cmd_domain new.example.com
+check "refuses the same name"     fails cmd_domain proxy.example.com
+check "rejects a bare label"      fails cmd_domain localhost --force
+
+cmd_domain NEW.example.com --force >/dev/null
+check "rewrites the relay config" grep -qF '"public_hostname": "new.example.com"' "$CONFIG"
+check "rewrites the caddy dropin" grep -qx 'Environment=TPROXY_HOSTNAME=new.example.com' "$CADDY_DROPIN"
+check "keeps the ACME e-mail"     test "$(read_email)" = you@example.com
+check "link follows the domain"   test "$(tg_link)" = "https://t.me/webproxy?server=new.example.com&secret=$new"
+
 printf '\n  %d checks passed\n\n' "$ok"

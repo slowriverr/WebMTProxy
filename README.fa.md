@@ -14,7 +14,7 @@
 <p align="center">
   <img alt="shell" src="https://img.shields.io/badge/shell-bash-4EAA25?logo=gnubash&logoColor=white">
   <img alt="platform" src="https://img.shields.io/badge/platform-Debian%20%7C%20Ubuntu%20x86__64-A81D33?logo=debian&logoColor=white">
-  <img alt="tests" src="https://img.shields.io/badge/tests-57%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-65%20passing-brightgreen">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-blue">
 </p>
 
@@ -152,6 +152,7 @@ $ sudo webmtproxy
 | `webmtproxy sponsor [TAG]` | نمایش، ست کردن، یا حذف (`off`) تگ کانال اسپانسر |
 | `webmtproxy site [DIR]` | نمایش سایت پوششی فعلی، یا پابلیش کردن `DIR` به‌جای آن |
 | `webmtproxy mode [MODE]` | مود کریر: `https`، `https-lanes`، `websocket`، `websocket-lanes` |
+| `webmtproxy domain [HOST]` | نمایش یا تعویض دامنه، و چاپ لینک جدید |
 | `webmtproxy restart` | ری‌استارت همه سرویس‌ها |
 | `webmtproxy logs` | دنبال‌کردن همه لاگ‌ها |
 | `webmtproxy update` | گرفتن آخرین نسخه و بیلد مجدد |
@@ -246,7 +247,7 @@ sudo webmtproxy site                    # الان چه چیزی سرو می‌�
 
 <div dir="rtl">
 
-۵۷ تست روی اعتبارسنجی ورودی‌ها، پچ زمان نصب، چرخش سکرت، drop-in تگ اسپانسر، پابلیش سایت و مود کریر. برای اینکه بوت‌استرپ و
+۶۵ تست روی اعتبارسنجی ورودی‌ها، پچ زمان نصب، چرخش سکرت، drop-in تگ اسپانسر، پابلیش سایت، مود کریر و تعویض دامنه. برای اینکه بوت‌استرپ و
 `webmtproxy update` به فورک خودت اشاره کنند، `WEBMTPROXY_REPO` را ست کن.
 
 ## اعتبارها

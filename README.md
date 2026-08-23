@@ -14,7 +14,7 @@
 <p align="center">
   <img alt="shell" src="https://img.shields.io/badge/shell-bash-4EAA25?logo=gnubash&logoColor=white">
   <img alt="platform" src="https://img.shields.io/badge/platform-Debian%20%7C%20Ubuntu%20x86__64-A81D33?logo=debian&logoColor=white">
-  <img alt="tests" src="https://img.shields.io/badge/tests-57%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-65%20passing-brightgreen">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-blue">
 </p>
 
@@ -132,6 +132,7 @@ $ sudo webmtproxy
 | `webmtproxy sponsor [TAG]` | show, set, or clear (`off`) the sponsor channel tag |
 | `webmtproxy site [DIR]` | show the live cover site, or publish `DIR` as it |
 | `webmtproxy mode [MODE]` | carrier transport: `https`, `https-lanes`, `websocket`, `websocket-lanes` |
+| `webmtproxy domain [HOST]` | show or change the hostname, then print the new link |
 | `webmtproxy restart` | restart every service |
 | `webmtproxy logs` | follow all journals |
 | `webmtproxy update` | pull the latest and rebuild |
@@ -206,8 +207,8 @@ also warns about the things the response policy blocks: inline `<style>` and
 ./test_install.sh
 ```
 
-57 checks over input validation, the install-time patch, secret rotation, the
-sponsor drop-in, site publishing and carrier mode.
+65 checks over input validation, the install-time patch, secret rotation, the
+sponsor drop-in, site publishing, carrier mode and the hostname switch.
 Set `WEBMTPROXY_REPO` to point the bootstrap and `webmtproxy update` at a fork.
 
 ## Credits

@@ -14,7 +14,7 @@
 <p align="center">
   <img alt="shell" src="https://img.shields.io/badge/shell-bash-4EAA25?logo=gnubash&logoColor=white">
   <img alt="platform" src="https://img.shields.io/badge/platform-Debian%20%7C%20Ubuntu%20x86__64-A81D33?logo=debian&logoColor=white">
-  <img alt="tests" src="https://img.shields.io/badge/tests-57%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-65%20passing-brightgreen">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-blue">
 </p>
 
@@ -133,6 +133,7 @@ $ sudo webmtproxy
 | `webmtproxy sponsor [TAG]` | показать, задать или убрать (`off`) тег спонсорского канала |
 | `webmtproxy site [DIR]` | показать текущий сайт-прикрытие или опубликовать `DIR` |
 | `webmtproxy mode [MODE]` | транспорт: `https`, `https-lanes`, `websocket`, `websocket-lanes` |
+| `webmtproxy domain [HOST]` | показать или сменить домен и вывести новую ссылку |
 | `webmtproxy restart` | перезапустить все сервисы |
 | `webmtproxy logs` | следить за всеми журналами |
 | `webmtproxy update` | получить свежую версию и пересобрать |
@@ -207,7 +208,7 @@ sudo webmtproxy site                    # что отдаётся сейчас
 ./test_install.sh
 ```
 
-57 проверок: валидация ввода, патч во время установки, смена секрета, drop-in тега, публикация сайта и режим транспорта.
+65 проверок: валидация ввода, патч во время установки, смена секрета, drop-in тега, публикация сайта, режим транспорта и смена домена.
 Задайте `WEBMTPROXY_REPO`, чтобы bootstrap и `webmtproxy update` смотрели на форк.
 
 ## Благодарности

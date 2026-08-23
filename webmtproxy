@@ -272,6 +272,55 @@ cmd_mode() {
 	ok "carrier mode set to $mode — clients reconnect on their next session"
 }
 
+# Switching hostname is the one operation that can take the proxy offline: if
+# the new name does not resolve here, Caddy cannot finish ACME and the old name
+# is already gone. So the DNS check is a hard stop rather than a warning.
+cmd_domain() {
+	local new=${1:-} force=${2:-} old resolved tmp
+	old="$(read_domain)"
+
+	if [[ -z "$new" ]]; then
+		printf '%s\n' "$old"
+		return 0
+	fi
+
+	new="$(printf '%s' "$new" | tr '[:upper:]' '[:lower:]')"
+	[[ "$new" =~ ^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$ && "$new" == *.* ]] ||
+		die "hostname must be a lowercase ASCII DNS name with a dot"
+	[[ "$new" != "$old" ]] || die "$new is already the hostname"
+
+	# An unresolvable name is the case this guard exists for, so getent failing
+	# must not take the pipeline (and with pipefail, the script) down with it.
+	resolved="$(getent ahostsv4 "$new" 2>/dev/null | awk 'NR==1{print $1}' || true)"
+	if [[ -z "$resolved" ]] || ! ip -4 -o addr show scope global 2>/dev/null |
+		awk '{split($4,a,"/"); print a[1]}' | grep -qx "$resolved"; then
+		[[ "$force" == --force ]] ||
+			die "$new does not resolve to this host — fix the A record, or pass --force"
+		warn "$new does not resolve here; TLS issuance will likely fail"
+	fi
+
+	tmp="$(mktemp "$CONFIG.XXXXXX")"
+	sed "s/\(\"public_hostname\"[[:space:]]*:[[:space:]]*\"\)[^\"]*\"/\1$new\"/" "$CONFIG" > "$tmp"
+	grep -q "\"$new\"" "$tmp" || { rm -f "$tmp"; die "could not rewrite $CONFIG"; }
+	chown root:tproxy "$tmp"; chmod 0640 "$tmp"; mv -f "$tmp" "$CONFIG"
+
+	tmp="$(mktemp "$CADDY_DROPIN.XXXXXX")"
+	sed "s|^Environment=TPROXY_HOSTNAME=.*|Environment=TPROXY_HOSTNAME=$new|" "$CADDY_DROPIN" > "$tmp"
+	grep -qx "Environment=TPROXY_HOSTNAME=$new" "$tmp" ||
+		{ rm -f "$tmp"; die "could not rewrite $CADDY_DROPIN"; }
+	chmod 0644 "$tmp"; mv -f "$tmp" "$CADDY_DROPIN"
+
+	systemctl daemon-reload
+	systemctl restart tproxy-server caddy
+	ok "hostname changed from $old to $new"
+
+	# The capability is derived from hostname and secret, so every link that was
+	# handed out for the old name is dead even though the secret is unchanged.
+	warn "every existing link is now dead — share the new one"
+	printf '\n  %s%s%s\n\n' "$CYN" "$(tg_link)" "$R"
+	printf '  %sCaddy needs a minute to issue the certificate for %s%s\n\n' "$D" "$new" "$R"
+}
+
 cmd_restart() {
 	local unit
 	for unit in mtproxy tproxy-server caddy; do
@@ -368,6 +417,8 @@ usage() {
 	    webmtproxy site [DIR]      show the cover site, or publish DIR as it
 	    webmtproxy mode [MODE]     carrier: https, https-lanes, websocket,
 	                               websocket-lanes
+	    webmtproxy domain [HOST]   show or change the hostname (--force to skip
+	                               the DNS check)
 	    webmtproxy restart         restart mtproxy, relay and Caddy
 	    webmtproxy logs            follow all three journals
 	    webmtproxy update          pull WebMTProxy, rebuild from upstream
@@ -387,6 +438,7 @@ case "${1:-panel}" in
 	sponsor)        require_root sponsor; require_install; cmd_sponsor "${2:-}" ;;
 	site)           require_root site; require_install; cmd_site "${2:-}" ;;
 	mode)           require_root mode; require_install; cmd_mode "${2:-}" ;;
+	domain)         require_root domain; require_install; cmd_domain "${2:-}" "${3:-}" ;;
 	restart)        require_root restart; require_install; cmd_restart ;;
 	logs)           require_root logs; cmd_logs ;;
 	update)         require_root update; require_install; cmd_update ;;
