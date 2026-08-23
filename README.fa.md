@@ -13,7 +13,7 @@
 <p align="center">
   <img alt="shell" src="https://img.shields.io/badge/shell-bash-4EAA25?logo=gnubash&logoColor=white">
   <img alt="platform" src="https://img.shields.io/badge/platform-Debian%20%7C%20Ubuntu%20x86__64-A81D33?logo=debian&logoColor=white">
-  <img alt="tests" src="https://img.shields.io/badge/tests-29%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-32%20passing-brightgreen">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-blue">
 </p>
 
@@ -91,7 +91,7 @@ sudo ./install.sh --domain proxy.example.com --email you@example.com --yes
 | --- | --- |
 | `-d, --domain HOST` | نام دامنه عمومی، مثلاً `proxy.example.com` |
 | `-e, --email ADDR` | ایمیل تماس برای Let's Encrypt |
-| `-s, --secret HEX` | ۳۲ کاراکتر hex، اختیاراً با پیشوند `dd` (پیش‌فرض: تصادفی) |
+| `-s, --secret HEX` | ۳۲ کاراکتر hex، اختیاراً با پیشوند `dd` — اگر ندهی پرسیده می‌شود |
 | `--site-dir DIR` | این پوشه به‌عنوان سایت پوششی سرو شود |
 | `--site-upstream URL` | سایت پوششی از `http://127.0.0.1:PORT` پروکسی شود |
 | `--workers N` | تعداد ورکرها (پیش‌فرض ۱) |
@@ -175,7 +175,7 @@ sudo ./install.sh -d proxy.example.com -e you@example.com --site-dir /opt/my-sit
 
 <div dir="rtl">
 
-۲۹ تست روی اعتبارسنجی ورودی‌ها، پچ زمان نصب و چرخش سکرت. برای اینکه بوت‌استرپ و
+۳۲ تست روی اعتبارسنجی ورودی‌ها، پچ زمان نصب و چرخش سکرت. برای اینکه بوت‌استرپ و
 `webmtproxy update` به فورک خودت اشاره کنند، `WEBMTPROXY_REPO` را ست کن.
 
 ## اعتبارها

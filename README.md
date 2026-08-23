@@ -13,7 +13,7 @@
 <p align="center">
   <img alt="shell" src="https://img.shields.io/badge/shell-bash-4EAA25?logo=gnubash&logoColor=white">
   <img alt="platform" src="https://img.shields.io/badge/platform-Debian%20%7C%20Ubuntu%20x86__64-A81D33?logo=debian&logoColor=white">
-  <img alt="tests" src="https://img.shields.io/badge/tests-29%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-32%20passing-brightgreen">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-blue">
 </p>
 
@@ -76,7 +76,7 @@ issued. Progress is on screen, full output in `/var/log/webmtproxy-install.log`.
 | --- | --- |
 | `-d, --domain HOST` | public hostname, e.g. `proxy.example.com` |
 | `-e, --email ADDR` | contact e-mail for Let's Encrypt |
-| `-s, --secret HEX` | 32 hex chars, optionally `dd`-prefixed (default: random) |
+| `-s, --secret HEX` | 32 hex chars, optionally `dd`-prefixed — if omitted you are asked |
 | `--site-dir DIR` | serve this directory as the cover website |
 | `--site-upstream URL` | proxy the cover website to `http://127.0.0.1:PORT` |
 | `--workers N` | worker processes (default 1) |
@@ -148,7 +148,7 @@ sudo ./install.sh -d proxy.example.com -e you@example.com --site-dir /opt/my-sit
 ./test_install.sh
 ```
 
-29 checks over input validation, the install-time patch, and secret rotation.
+32 checks over input validation, the install-time patch, and secret rotation.
 Set `WEBMTPROXY_REPO` to point the bootstrap and `webmtproxy update` at a fork.
 
 ## Credits

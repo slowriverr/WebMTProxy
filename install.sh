@@ -68,6 +68,8 @@ usage() {
 valid_domain() { [[ "$1" =~ ^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$ && "$1" == *.* ]]; }
 valid_email()  { [[ "$1" =~ ^[A-Za-z0-9._+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$ ]]; }
 valid_secret() { [[ "$1" =~ ^([0-9a-f]{32}|dd[0-9a-f]{32})$ ]]; }
+# Same rule, but tolerant of a pasted uppercase secret; it is lowercased after.
+valid_secret_input() { valid_secret "$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')"; }
 gen_secret()   { openssl rand -hex 16 2>/dev/null || od -An -tx1 -N16 /dev/urandom | tr -d ' \n'; }
 
 # prompt VAR "label" "hint" validator
@@ -252,7 +254,21 @@ fi
 
 [[ -n "$domain" ]] || prompt domain "Domain      " "(proxy.example.com)" valid_domain
 [[ -n "$email"  ]] || prompt email  "ACME e-mail " "(you@example.com)"    valid_email
-secret="$(printf '%s' "${secret:-$(gen_secret)}" | tr '[:upper:]' '[:lower:]')"
+if [[ -z "$secret" ]]; then
+	if [[ $assume_yes -eq 1 ]] || [[ ! -t 0 ]]; then
+		secret="$(gen_secret)"
+	else
+		printf '  %s?%s Secret       %s[Y] generate a random one · [n] I have my own%s ' \
+			"$CYN" "$R" "$D" "$R"
+		read -r reply </dev/tty || true
+		if [[ "$reply" =~ ^[Nn] ]]; then
+			prompt secret "Secret      " "(32 hex, optionally dd-prefixed)" valid_secret_input
+		else
+			secret="$(gen_secret)"
+		fi
+	fi
+fi
+secret="$(printf '%s' "$secret" | tr '[:upper:]' '[:lower:]')"
 
 valid_domain "$domain" || die "hostname must be a lowercase ASCII DNS hostname with a dot"
 valid_email  "$email"  || die "a valid ACME contact e-mail is required"

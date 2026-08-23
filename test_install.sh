@@ -24,6 +24,9 @@ check "accepts a dd-prefixed one"   valid_secret dd0123456789abcdef0123456789abc
 check "rejects a short secret"      no valid_secret 0123456789abcdef
 check "rejects uppercase hex"       no valid_secret 0123456789ABCDEF0123456789ABCDEF
 check "generates a valid secret"    valid_secret "$(gen_secret)"
+check "prompt takes uppercase hex"  valid_secret_input 0123456789ABCDEF0123456789ABCDEF
+check "prompt takes uppercase DD"   valid_secret_input DD0123456789abcdef0123456789abcdef
+check "prompt still rejects junk"   no valid_secret_input nothex
 
 # patch_umask against a stand-in for the real upstream deploy/install.sh.
 work="$(mktemp -d)"; trap 'rm -rf "$work"' EXIT

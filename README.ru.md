@@ -13,7 +13,7 @@
 <p align="center">
   <img alt="shell" src="https://img.shields.io/badge/shell-bash-4EAA25?logo=gnubash&logoColor=white">
   <img alt="platform" src="https://img.shields.io/badge/platform-Debian%20%7C%20Ubuntu%20x86__64-A81D33?logo=debian&logoColor=white">
-  <img alt="tests" src="https://img.shields.io/badge/tests-29%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-32%20passing-brightgreen">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-blue">
 </p>
 
@@ -76,7 +76,7 @@ sudo ./install.sh --domain proxy.example.com --email you@example.com --yes
 | --- | --- |
 | `-d, --domain HOST` | публичное имя хоста, например `proxy.example.com` |
 | `-e, --email ADDR` | контактный e-mail для Let's Encrypt |
-| `-s, --secret HEX` | 32 hex-символа, можно с префиксом `dd` (по умолчанию случайный) |
+| `-s, --secret HEX` | 32 hex-символа, можно с префиксом `dd` — если не задан, будет спрошено |
 | `--site-dir DIR` | отдавать этот каталог как сайт-прикрытие |
 | `--site-upstream URL` | проксировать сайт-прикрытие на `http://127.0.0.1:PORT` |
 | `--workers N` | число воркеров (по умолчанию 1) |
@@ -148,7 +148,7 @@ sudo ./install.sh -d proxy.example.com -e you@example.com --site-dir /opt/my-sit
 ./test_install.sh
 ```
 
-29 проверок: валидация ввода, патч во время установки, смена секрета.
+32 проверки: валидация ввода, патч во время установки, смена секрета.
 Задайте `WEBMTPROXY_REPO`, чтобы bootstrap и `webmtproxy update` смотрели на форк.
 
 ## Благодарности
