@@ -1,5 +1,3 @@
-| `webmtproxy sponsor [TAG\|off]` | نمایش، ست یا حذف تگ کانال اسپانسر |
-| `-t, --tag HEX` | تگ کانال اسپانسر از @MTProxybot (پیش‌فرض: ندارد) |
 <h1 align="center">WebMTProxy</h1>
 
 <p align="center">
@@ -94,6 +92,7 @@ sudo ./install.sh --domain proxy.example.com --email you@example.com --yes
 | `-d, --domain HOST` | نام دامنه عمومی، مثلاً `proxy.example.com` |
 | `-e, --email ADDR` | ایمیل تماس برای Let's Encrypt |
 | `-s, --secret HEX` | ۳۲ کاراکتر hex، اختیاراً با پیشوند `dd` — اگر ندهی پرسیده می‌شود |
+| `-t, --tag HEX` | تگ کانال اسپانسر از [@MTProxybot](https://t.me/MTProxybot) (پیش‌فرض: ندارد) |
 | `--site-dir DIR` | این پوشه به‌عنوان سایت پوششی سرو شود |
 | `--site-upstream URL` | سایت پوششی از `http://127.0.0.1:PORT` پروکسی شود |
 | `--workers N` | تعداد ورکرها (پیش‌فرض ۱) |
@@ -145,6 +144,7 @@ $ sudo webmtproxy
 | `webmtproxy link` | چاپ لینک `t.me/webproxy` |
 | `webmtproxy qr` | چاپ همان لینک به شکل QR |
 | `webmtproxy rotate-secret [HEX]` | سکرت جدید، ری‌استارت، چاپ لینک تازه |
+| `webmtproxy sponsor [TAG]` | نمایش، ست کردن، یا حذف (`off`) تگ کانال اسپانسر |
 | `webmtproxy restart` | ری‌استارت همه سرویس‌ها |
 | `webmtproxy logs` | دنبال‌کردن همه لاگ‌ها |
 | `webmtproxy update` | گرفتن آخرین نسخه و بیلد مجدد |

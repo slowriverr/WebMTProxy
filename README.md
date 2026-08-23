@@ -1,5 +1,3 @@
-| `webmtproxy sponsor [TAG\|off]` | show, set or clear the sponsor channel tag |
-| `-t, --tag HEX` | sponsor channel tag from @MTProxybot (default: none) |
 <h1 align="center">WebMTProxy</h1>
 
 <p align="center">
@@ -79,6 +77,7 @@ issued. Progress is on screen, full output in `/var/log/webmtproxy-install.log`.
 | `-d, --domain HOST` | public hostname, e.g. `proxy.example.com` |
 | `-e, --email ADDR` | contact e-mail for Let's Encrypt |
 | `-s, --secret HEX` | 32 hex chars, optionally `dd`-prefixed — if omitted you are asked |
+| `-t, --tag HEX` | sponsor channel tag from [@MTProxybot](https://t.me/MTProxybot) (default: none) |
 | `--site-dir DIR` | serve this directory as the cover website |
 | `--site-upstream URL` | proxy the cover website to `http://127.0.0.1:PORT` |
 | `--workers N` | worker processes (default 1) |
@@ -126,6 +125,7 @@ $ sudo webmtproxy
 | `webmtproxy link` | print the `t.me/webproxy` link |
 | `webmtproxy qr` | print it as a QR code |
 | `webmtproxy rotate-secret [HEX]` | new secret, restart, print the new link |
+| `webmtproxy sponsor [TAG]` | show, set, or clear (`off`) the sponsor channel tag |
 | `webmtproxy restart` | restart every service |
 | `webmtproxy logs` | follow all journals |
 | `webmtproxy update` | pull the latest and rebuild |

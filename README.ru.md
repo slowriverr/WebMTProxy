@@ -1,5 +1,3 @@
-| `webmtproxy sponsor [TAG\|off]` | показать, задать или убрать тег спонсорского канала |
-| `-t, --tag HEX` | тег спонсорского канала от @MTProxybot (по умолчанию нет) |
 <h1 align="center">WebMTProxy</h1>
 
 <p align="center">
@@ -79,6 +77,7 @@ sudo ./install.sh --domain proxy.example.com --email you@example.com --yes
 | `-d, --domain HOST` | публичное имя хоста, например `proxy.example.com` |
 | `-e, --email ADDR` | контактный e-mail для Let's Encrypt |
 | `-s, --secret HEX` | 32 hex-символа, можно с префиксом `dd` — если не задан, будет спрошено |
+| `-t, --tag HEX` | тег спонсорского канала от [@MTProxybot](https://t.me/MTProxybot) (по умолчанию нет) |
 | `--site-dir DIR` | отдавать этот каталог как сайт-прикрытие |
 | `--site-upstream URL` | проксировать сайт-прикрытие на `http://127.0.0.1:PORT` |
 | `--workers N` | число воркеров (по умолчанию 1) |
@@ -126,6 +125,7 @@ $ sudo webmtproxy
 | `webmtproxy link` | вывести ссылку `t.me/webproxy` |
 | `webmtproxy qr` | вывести её в виде QR-кода |
 | `webmtproxy rotate-secret [HEX]` | новый секрет, перезапуск, новая ссылка |
+| `webmtproxy sponsor [TAG]` | показать, задать или убрать (`off`) тег спонсорского канала |
 | `webmtproxy restart` | перезапустить все сервисы |
 | `webmtproxy logs` | следить за всеми журналами |
 | `webmtproxy update` | получить свежую версию и пересобрать |
