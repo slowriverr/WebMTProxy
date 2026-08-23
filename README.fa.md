@@ -112,7 +112,7 @@ $ sudo webmtproxy
 
   ╭────────────────────────────────────────────────────╮
   │ WebMTProxy                                         │
-  │ proxy.example.com                            online │
+  │ proxy.example.com                           online │
   ╰────────────────────────────────────────────────────╯
 
   SERVICES
