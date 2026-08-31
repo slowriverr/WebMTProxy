@@ -29,6 +29,12 @@ check "generates a valid secret"    valid_secret "$(gen_secret)"
 check "prompt takes uppercase hex"  valid_secret_input 0123456789ABCDEF0123456789ABCDEF
 check "prompt takes uppercase DD"   valid_secret_input DD0123456789abcdef0123456789abcdef
 check "prompt still rejects junk"   no valid_secret_input nothex
+check "blank secret means default"  blank_or_secret ""
+check "blank secret takes hex"      blank_or_secret DD0123456789abcdef0123456789abcdef
+check "blank secret rejects junk"   no blank_or_secret nothex
+check "blank tag means none"        blank_or_tag ""
+check "blank tag takes uppercase"   blank_or_tag AABBCCDDEEFF00112233445566778899
+check "blank tag rejects dd prefix" no blank_or_tag dd0123456789abcdef0123456789abcdef
 
 # patch_umask against a stand-in for the real upstream deploy/install.sh.
 work="$(mktemp -d)"; trap 'rm -rf "$work"' EXIT

@@ -75,6 +75,10 @@ valid_email()  { [[ "$1" =~ ^[A-Za-z0-9._+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$ ]]; 
 valid_secret() { [[ "$1" =~ ^([0-9a-f]{32}|dd[0-9a-f]{32})$ ]]; }
 # Same rule, but tolerant of a pasted uppercase secret; it is lowercased after.
 valid_secret_input() { valid_secret "$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')"; }
+# At a prompt an empty answer means "use the default", so both of these accept
+# one; the flags on the command line are still validated strictly further down.
+blank_or_secret() { [[ -z "$1" ]] || valid_secret_input "$1"; }
+blank_or_tag()    { [[ -z "$1" ]] || [[ "$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')" =~ ^[0-9a-f]{32}$ ]]; }
 gen_secret()   { openssl rand -hex 16 2>/dev/null || od -An -tx1 -N16 /dev/urandom | tr -d ' \n'; }
 
 # prompt VAR "label" "hint" validator
@@ -259,7 +263,7 @@ done
 
 # ── preflight ────────────────────────────────────────────────────────────────
 
-banner
+[[ -n "${WEBMTPROXY_BOOTSTRAPPED:-}" ]] || banner
 
 [[ ${EUID} -eq 0 ]]           || die "run as root: sudo ./install.sh"
 [[ "$(uname -s)" == Linux ]]  || die "this installer targets Linux (Debian/Ubuntu)"
@@ -278,6 +282,7 @@ if [[ ! -f "$SELF_DIR/webmtproxy" ]]; then
 	rm -rf "$HOME_DIR"
 	git clone -q "$REPO" "$HOME_DIR" ||
 		die "could not clone $REPO — set WEBMTPROXY_REPO to your fork"
+	export WEBMTPROXY_BOOTSTRAPPED=1
 	exec bash "$HOME_DIR/install.sh" ${ARGS[@]+"${ARGS[@]}"}
 fi
 
@@ -291,23 +296,14 @@ if [[ -z "$secret" ]]; then
 	if [[ $assume_yes -eq 1 ]] || [[ ! -t 0 ]]; then
 		secret="$(gen_secret)"
 	else
-		printf '  %s?%s Secret       %s[Y] generate a random one · [n] I have my own%s ' \
-			"$CYN" "$R" "$D" "$R"
-		read -r reply </dev/tty || true
-		if [[ "$reply" =~ ^[Nn] ]]; then
-			prompt secret "Secret      " "(32 hex, optionally dd-prefixed)" valid_secret_input
-		else
-			secret="$(gen_secret)"
-		fi
+		prompt secret "Secret      " "([Enter] generate one · or paste 32 hex)" blank_or_secret
+		[[ -n "$secret" ]] || secret="$(gen_secret)"
 	fi
 fi
 secret="$(printf '%s' "$secret" | tr '[:upper:]' '[:lower:]')"
 
 if [[ -z "$tag" ]] && [[ $assume_yes -eq 0 ]] && [[ -t 0 ]]; then
-	printf '  %s?%s Sponsor tag  %s[Enter] none · or the 32 hex tag from @MTProxybot%s ' \
-		"$CYN" "$R" "$D" "$R"
-	read -r tag </dev/tty || true
-	tag="${tag//[[:space:]]/}"
+	prompt tag "Sponsor tag " "([Enter] none · or the tag from @MTProxybot)" blank_or_tag
 fi
 tag="$(printf '%s' "$tag" | tr '[:upper:]' '[:lower:]')"
 [[ -z "$tag" || "$tag" =~ ^[0-9a-f]{32}$ ]] || die "--tag must be 32 hex characters"
@@ -398,5 +394,5 @@ printf '  %s%s%s\n\n' "$CYN" "$link" "$R"
 printf '  %sHostname%s  %s\n' "$D" "$R" "$domain"
 printf '  %sSecret%s    %s\n' "$D" "$R" "$secret"
 printf '  %sWebsite%s   https://%s/\n' "$D" "$R" "$domain"
-printf '  %sPanel%s     %swebmtproxy%s   (link · qr · rotate-secret · logs · update)\n\n' \
-	"$D" "$R" "$B" "$R"
+printf '  %sPanel%s     %swebmtproxy%s for the panel, %swebmtproxy help%s for every command\n\n' \
+	"$D" "$R" "$B" "$R" "$B" "$R"
