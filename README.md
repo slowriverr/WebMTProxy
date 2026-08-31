@@ -83,8 +83,8 @@ issued. Progress is on screen, full output in `/var/log/webmtproxy-install.log`.
 | `-t, --tag HEX` | sponsor channel tag from [@MTProxybot](https://t.me/MTProxybot) (default: none) |
 | `--site-dir DIR` | serve this directory as the cover website |
 | `--site-upstream URL` | proxy the cover website to `http://127.0.0.1:PORT` |
-| `--workers N` | worker processes (default 1) |
-| `--max-connections N` | max connections (default 4096) |
+| `--workers N` | worker processes, `0` = single process (default 0) |
+| `--max-connections N` | connection cap, `0` = none (default 0) |
 | `-y, --yes` | no prompts, no confirmation |
 | `-v, --verbose` | stream the build output instead of a spinner |
 
@@ -119,8 +119,12 @@ $ sudo webmtproxy
     email          you@example.com
     sponsor        none
     carrier        https (default)
+    mtproxy        0 worker(s)
 
     https://t.me/webproxy?server=proxy.example.com&secret=dd7f3c1e…
+
+  commands  link · qr · rotate-secret · sponsor · site · mode · domain
+            -M N · -C N · restart · logs · update · uninstall · help
 ```
 
 | Command | What it does |
@@ -133,6 +137,7 @@ $ sudo webmtproxy
 | `webmtproxy site [DIR]` | show the live cover site, or publish `DIR` as it |
 | `webmtproxy mode [MODE]` | carrier transport: `https`, `https-lanes`, `websocket`, `websocket-lanes` |
 | `webmtproxy domain [HOST]` | show or change the hostname, then print the new link |
+| `webmtproxy -M N [-C N]` | MTProxy workers (`0` = a single process) and the connection cap (`0` = no limit) |
 | `webmtproxy restart` | restart every service |
 | `webmtproxy logs` | follow all journals |
 | `webmtproxy update` | pull the latest and rebuild |

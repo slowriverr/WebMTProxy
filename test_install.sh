@@ -91,6 +91,23 @@ check "MTProxy gets bare hex"     grep -qx 'MTPROXY_SECRET=111111111111111111111
 check "MTProxy keeps its workers" grep -qx 'MTPROXY_WORKERS=1' "$MTPROXY_ENV"
 check "rejects a bad secret"      fails cmd_rotate nothex
 
+# The MTProxy knobs share that env file and are set with MTProxy's own flags;
+# 0 is legal for both (single process, no cap) even though upstream refuses it.
+cmd_limits -M 0 -C 0 >/dev/null
+check "workers set to 0"          grep -qx 'MTPROXY_WORKERS=0' "$MTPROXY_ENV"
+check "connection cap removed"    grep -qx 'MTPROXY_MAX_CONNECTIONS=0' "$MTPROXY_ENV"
+check "hides an absent cap"       test "$(read_limits)" = "0 worker(s)"
+cmd_limits -M 2 -C 8192 >/dev/null
+check "reports a real limit"      test "$(read_limits)" = "2 worker(s), max 8192 connections"
+cmd_limits -C 4096 >/dev/null
+check "-C alone keeps workers"    grep -qx 'MTPROXY_WORKERS=2' "$MTPROXY_ENV"
+check "-C alone sets the cap"     grep -qx 'MTPROXY_MAX_CONNECTIONS=4096' "$MTPROXY_ENV"
+check "limits keep the secret"    grep -qx 'MTPROXY_SECRET=11111111111111111111111111111111' "$MTPROXY_ENV"
+check "rejects 257 workers"       fails cmd_limits -M 257
+check "rejects a negative cap"    fails cmd_limits -C -1
+check "rejects an unknown flag"   fails cmd_limits -X 1
+check "rejects a bare -M"         fails cmd_limits -M
+
 check "reads the hostname" test "$(read_domain)" = proxy.example.com
 check "builds the link"    test "$(tg_link)" = "https://t.me/webproxy?server=proxy.example.com&secret=$new"
 

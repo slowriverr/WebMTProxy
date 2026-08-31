@@ -84,8 +84,8 @@ sudo ./install.sh --domain proxy.example.com --email you@example.com --yes
 | `-t, --tag HEX` | тег спонсорского канала от [@MTProxybot](https://t.me/MTProxybot) (по умолчанию нет) |
 | `--site-dir DIR` | отдавать этот каталог как сайт-прикрытие |
 | `--site-upstream URL` | проксировать сайт-прикрытие на `http://127.0.0.1:PORT` |
-| `--workers N` | число воркеров (по умолчанию 1) |
-| `--max-connections N` | максимум подключений (по умолчанию 4096) |
+| `--workers N` | число воркеров, `0` — один процесс (по умолчанию 0) |
+| `--max-connections N` | лимит подключений, `0` — без лимита (по умолчанию 0) |
 | `-y, --yes` | без вопросов и подтверждения |
 | `-v, --verbose` | показывать вывод сборки вместо спиннера |
 
@@ -120,8 +120,12 @@ $ sudo webmtproxy
     email          you@example.com
     sponsor        none
     carrier        https (default)
+    mtproxy        0 worker(s)
 
     https://t.me/webproxy?server=proxy.example.com&secret=dd7f3c1e…
+
+  commands  link · qr · rotate-secret · sponsor · site · mode · domain
+            -M N · -C N · restart · logs · update · uninstall · help
 ```
 
 | Команда | Что делает |
@@ -134,6 +138,7 @@ $ sudo webmtproxy
 | `webmtproxy site [DIR]` | показать текущий сайт-прикрытие или опубликовать `DIR` |
 | `webmtproxy mode [MODE]` | транспорт: `https`, `https-lanes`, `websocket`, `websocket-lanes` |
 | `webmtproxy domain [HOST]` | показать или сменить домен и вывести новую ссылку |
+| `webmtproxy -M N [-C N]` | воркеры MTProxy (`0` — один процесс) и лимит подключений (`0` — без лимита) |
 | `webmtproxy restart` | перезапустить все сервисы |
 | `webmtproxy logs` | следить за всеми журналами |
 | `webmtproxy update` | получить свежую версию и пересобрать |

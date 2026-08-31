@@ -38,6 +38,16 @@ read_domain() { sed -n 's/.*"public_hostname": *"\([^"]*\)".*/\1/p' "$CONFIG"; }
 read_secret() { sed -n 's/.*"secret": *"\([^"]*\)".*/\1/p' "$PROFILES"; }
 read_email()  { sed -n 's/^Environment=ACME_EMAIL=//p' "$CADDY_DROPIN" 2>/dev/null || true; }
 read_tag()    { sed -n 's/^Environment=MTPROXY_TAG=//p' "$TAG_DROPIN" 2>/dev/null | grep . || return 1; }
+read_limits() {
+	local w c
+	w="$(sed -n 's/^MTPROXY_WORKERS=//p' "$MTPROXY_ENV")"
+	c="$(sed -n 's/^MTPROXY_MAX_CONNECTIONS=//p' "$MTPROXY_ENV")"
+	# A cap of 0 is the default and the absence of a limit, so it is not worth a
+	# line in the panel; only a cap someone actually set gets reported.
+	printf '%s worker(s)' "${w:-unset}"
+	[[ "$c" =~ ^[1-9] ]] && printf ', max %s connections' "$c"
+	printf '\n'
+}
 tg_link()     { printf 'https://t.me/webproxy?server=%s&secret=%s' "$(read_domain)" "$(read_secret)"; }
 
 gen_secret() { openssl rand -hex 16 2>/dev/null || od -An -tx1 -N16 /dev/urandom | tr -d ' \n'; }
@@ -137,9 +147,11 @@ panel() {
 	field email "$(read_email)"
 	field sponsor "$(read_tag || printf '%snone%s' "$D" "$R")"
 	field carrier "$(cmd_mode)"
+	field mtproxy "$(read_limits)"
 	printf '\n    %s%s%s\n' "$CYN" "$link" "$R"
 
-	printf '\n  %scommands%s  link · qr · rotate-secret · restart · logs · update · uninstall\n\n' "$D" "$R"
+	printf '\n  %scommands%s  link · qr · rotate-secret · sponsor · site · mode · domain\n' "$D" "$R"
+	printf '            -M N · -C N · restart · logs · update · uninstall · help\n\n'
 }
 
 # ── commands ─────────────────────────────────────────────────────────────────
@@ -270,6 +282,48 @@ cmd_mode() {
 
 	systemctl restart tproxy-server
 	ok "carrier mode set to $mode — clients reconnect on their next session"
+}
+
+# MTProxy's own two knobs, spelled the way MTProxy spells them: -M workers
+# (0 keeps everything in one process, which MTProxy itself recommends for TLS
+# transport) and -C connection cap (0 = no cap, MTProxy's own default). They
+# live in the env file the unit sources, so setting them is a rewrite plus a
+# restart rather than a reinstall. Reading them needs no command of its own —
+# the panel prints them.
+cmd_limits() {
+	local workers= conns= tmp
+	while [[ $# -gt 0 ]]; do
+		[[ "$1" == -M || "$1" == -C ]] || die "expected -M WORKERS or -C CONNECTIONS, got: $1"
+		[[ $# -ge 2 ]] || die "$1 needs a number, e.g. $1 0"
+		case "$1" in
+			-M) workers="$2" ;;
+			-C) conns="$2" ;;
+		esac
+		shift 2
+	done
+	[[ -n "$workers$conns" ]] || die "nothing to set — pass -M WORKERS and/or -C CONNECTIONS"
+
+	if [[ -n "$workers" ]]; then
+		[[ "$workers" =~ ^[0-9]+$ ]] && ((workers <= 256)) ||
+			die "-M must be 0..256 — 0 runs MTProxy in a single process"
+	else
+		workers="$(sed -n 's/^MTPROXY_WORKERS=//p' "$MTPROXY_ENV")"
+	fi
+	if [[ -n "$conns" ]]; then
+		[[ "$conns" =~ ^[0-9]+$ ]] || die "-C must be a number — 0 removes the limit"
+	else
+		conns="$(sed -n 's/^MTPROXY_MAX_CONNECTIONS=//p' "$MTPROXY_ENV")"
+	fi
+
+	tmp="$(mktemp "$MTPROXY_ENV.XXXXXX")"
+	sed -e "s/^MTPROXY_WORKERS=.*/MTPROXY_WORKERS=$workers/" \
+		-e "s/^MTPROXY_MAX_CONNECTIONS=.*/MTPROXY_MAX_CONNECTIONS=$conns/" "$MTPROXY_ENV" > "$tmp"
+	grep -qx "MTPROXY_WORKERS=$workers" "$tmp" && grep -qx "MTPROXY_MAX_CONNECTIONS=$conns" "$tmp" ||
+		{ rm -f "$tmp"; die "could not rewrite $MTPROXY_ENV"; }
+	chown root:mtproxy "$tmp"; chmod 0640 "$tmp"; mv -f "$tmp" "$MTPROXY_ENV"
+
+	systemctl restart mtproxy
+	ok "MTProxy: $(read_limits)"
 }
 
 # Switching hostname is the one operation that can take the proxy offline: if
@@ -419,6 +473,8 @@ usage() {
 	                               websocket-lanes
 	    webmtproxy domain [HOST]   show or change the hostname (--force to skip
 	                               the DNS check)
+	    webmtproxy -M N [-C N]     MTProxy workers (0 = a single process) and
+	                               the connection cap (0 = no limit)
 	    webmtproxy restart         restart mtproxy, relay and Caddy
 	    webmtproxy logs            follow all three journals
 	    webmtproxy update          pull WebMTProxy, rebuild from upstream
@@ -439,6 +495,7 @@ case "${1:-panel}" in
 	site)           require_root site; require_install; cmd_site "${2:-}" ;;
 	mode)           require_root mode; require_install; cmd_mode "${2:-}" ;;
 	domain)         require_root domain; require_install; cmd_domain "${2:-}" "${3:-}" ;;
+	-M|-C)          require_root "$@"; require_install; cmd_limits "$@" ;;
 	restart)        require_root restart; require_install; cmd_restart ;;
 	logs)           require_root logs; cmd_logs ;;
 	update)         require_root update; require_install; cmd_update ;;

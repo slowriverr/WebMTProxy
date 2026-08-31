@@ -99,8 +99,8 @@ sudo ./install.sh --domain proxy.example.com --email you@example.com --yes
 | `-t, --tag HEX` | تگ کانال اسپانسر از [@MTProxybot](https://t.me/MTProxybot) (پیش‌فرض: ندارد) |
 | `--site-dir DIR` | این پوشه به‌عنوان سایت پوششی سرو شود |
 | `--site-upstream URL` | سایت پوششی از `http://127.0.0.1:PORT` پروکسی شود |
-| `--workers N` | تعداد ورکرها (پیش‌فرض ۱) |
-| `--max-connections N` | حداکثر اتصال (پیش‌فرض ۴۰۹۶) |
+| `--workers N` | تعداد ورکرها، `0` یعنی تک‌پروسه (پیش‌فرض ۰) |
+| `--max-connections N` | سقف اتصال، `0` یعنی بدون سقف (پیش‌فرض ۰) |
 | `-y, --yes` | بدون سؤال و بدون تأیید |
 | `-v, --verbose` | نمایش خروجی بیلد به‌جای اسپینر |
 
@@ -137,8 +137,12 @@ $ sudo webmtproxy
     email          you@example.com
     sponsor        none
     carrier        https (default)
+    mtproxy        0 worker(s)
 
     https://t.me/webproxy?server=proxy.example.com&secret=dd7f3c1e…
+
+  commands  link · qr · rotate-secret · sponsor · site · mode · domain
+            -M N · -C N · restart · logs · update · uninstall · help
 ```
 
 <div dir="rtl">
@@ -153,6 +157,7 @@ $ sudo webmtproxy
 | `webmtproxy site [DIR]` | نمایش سایت پوششی فعلی، یا پابلیش کردن `DIR` به‌جای آن |
 | `webmtproxy mode [MODE]` | مود کریر: `https`، `https-lanes`، `websocket`، `websocket-lanes` |
 | `webmtproxy domain [HOST]` | نمایش یا تعویض دامنه، و چاپ لینک جدید |
+| `webmtproxy -M N [-C N]` | ورکرهای MTProxy (`0` = تک‌پروسه) و سقف اتصال (`0` = بدون سقف) |
 | `webmtproxy restart` | ری‌استارت همه سرویس‌ها |
 | `webmtproxy logs` | دنبال‌کردن همه لاگ‌ها |
 | `webmtproxy update` | گرفتن آخرین نسخه و بیلد مجدد |

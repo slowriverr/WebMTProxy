@@ -21,7 +21,7 @@ REPO="${WEBMTPROXY_REPO:-$(git -C "$SELF_DIR" remote get-url origin 2>/dev/null 
 	echo https://github.com/slowriverr/WebMTProxy)}"
 
 domain=; email=; secret=; tag=; site_dir=; site_upstream=
-workers=1; max_connections=4096; assume_yes=0; verbose=0
+workers=0; max_connections=0; assume_yes=0; verbose=0
 
 if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
 	B=$'\e[1m'; D=$'\e[2m'; R=$'\e[0m'
@@ -53,8 +53,8 @@ usage() {
 	    -t, --tag HEX              sponsor channel tag from @MTProxybot (default: none)
 	        --site-dir DIR         serve this directory as the cover website
 	        --site-upstream URL    proxy the cover website to http://127.0.0.1:PORT
-	        --workers N            MTProxy workers (default 1)
-	        --max-connections N    MTProxy max connections (default 4096)
+	        --workers N            MTProxy workers, 0 = single process (default 0)
+	        --max-connections N    MTProxy connection cap, 0 = none (default 0)
 	    -y, --yes                  no prompts, no confirmation
 	    -v, --verbose              stream the build output instead of a spinner
 	    -h, --help                 this text
@@ -134,8 +134,11 @@ patch_umask() {
 }
 
 run_upstream() {
+	# Upstream's deploy script rejects 0 for either knob, so it gets its own
+	# defaults here and `webmtproxy -M N -C N` writes the real values after.
 	local args=(--hostname "$domain" --email "$email" --secret "$secret"
-		--mtproxy-workers "$workers" --mtproxy-max-connections "$max_connections")
+		--mtproxy-workers "$((workers > 0 ? workers : 1))"
+		--mtproxy-max-connections "$((max_connections > 0 ? max_connections : 4096))")
 	if   [[ -n "$site_upstream" ]]; then args+=(--site-upstream "$site_upstream")
 	elif [[ -n "$site_dir"      ]]; then args+=(--site-dir "$site_dir")
 	elif [[ ! -f /srv/tproxy-site/index.html ]]; then args+=(--site-dir "$DEFAULT_SITE")
@@ -173,7 +176,7 @@ fail() {
 	exit 1
 }
 
-STEP=0; TOTAL=8
+STEP=0; TOTAL=9
 step() {
 	local msg=$1; shift
 	STEP=$((STEP + 1))
@@ -284,8 +287,10 @@ tag="$(printf '%s' "$tag" | tr '[:upper:]' '[:lower:]')"
 valid_domain "$domain" || die "hostname must be a lowercase ASCII DNS hostname with a dot"
 valid_email  "$email"  || die "a valid ACME contact e-mail is required"
 valid_secret "$secret" || die "secret must be 32 lowercase hex chars, optionally dd-prefixed"
-[[ "$workers" =~ ^[1-9][0-9]*$ && $workers -le 256 ]] || die "--workers must be 1..256"
-[[ "$max_connections" =~ ^[1-9][0-9]*$ ]] || die "--max-connections must be positive"
+[[ "$workers" =~ ^[0-9]+$ && $workers -le 256 ]] ||
+	die "--workers must be 0..256 — 0 runs MTProxy in a single process"
+[[ "$max_connections" =~ ^[0-9]+$ ]] ||
+	die "--max-connections must be a number — 0 removes the limit"
 if [[ -n "$site_dir" ]]; then
 	[[ -r "$site_dir/index.html" ]] || die "--site-dir must contain a readable index.html"
 	site_dir="$(cd "$site_dir" && pwd -P)"
@@ -323,7 +328,9 @@ printf '  %sE-mail%s      %s\n' "$D" "$R" "$email"
 printf '  %sSecret%s      %s\n' "$D" "$R" "$secret"
 printf '  %sSponsor%s     %s\n' "$D" "$R" "${tag:-none}"
 printf '  %sCover site%s  %s\n' "$D" "$R" "$site_label"
-printf '  %sMTProxy%s     %s worker(s), max %s connections\n' "$D" "$R" "$workers" "$max_connections"
+if ((max_connections > 0)); then conn_label="max $max_connections connections"
+else conn_label="no connection limit"; fi
+printf '  %sMTProxy%s     %s worker(s), %s\n' "$D" "$R" "$workers" "$conn_label"
 printf '  %sLog%s         %s\n\n' "$D" "$R" "$LOG"
 
 if [[ $assume_yes -eq 0 ]]; then
@@ -346,6 +353,7 @@ step "Fetching tproxy-server"          fetch_upstream
 step "Patching the deploy script"      patch_umask
 step "Building MTProxy, relay and TLS" run_upstream
 step "Installing the webmtproxy panel" install_panel
+step "Applying the MTProxy limits"      /usr/local/bin/webmtproxy -M "$workers" -C "$max_connections"
 step "Configuring the sponsor channel" /usr/local/bin/webmtproxy sponsor "${tag:-off}"
 step "Verifying services"              verify
 
