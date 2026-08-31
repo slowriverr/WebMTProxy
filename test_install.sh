@@ -188,4 +188,32 @@ check "rewrites the caddy dropin" grep -qx 'Environment=TPROXY_HOSTNAME=new.exam
 check "keeps the ACME e-mail"     test "$(read_email)" = you@example.com
 check "link follows the domain"   test "$(tg_link)" = "https://t.me/webproxy?server=new.example.com&secret=$new"
 
+
+# `webmtproxy update` re-runs install.sh, which is why anything the panel
+# manages has to survive a re-run instead of falling back to install defaults.
+TAG_DROPIN="$work/carry-tag.conf"
+MTPROXY_ENV="$work/carry.env"
+PROFILES="$work/carry.json"
+printf 'Environment=MTPROXY_TAG=%s\n' aabbccddeeff00112233445566778899 > "$TAG_DROPIN"
+printf 'MTPROXY_WORKERS=2\nMTPROXY_MAX_CONNECTIONS=8192\n' > "$MTPROXY_ENV"
+printf '{"profiles":[{"backend":"127.0.0.1:2398","carrier_mode":"websocket"}]}\n' > "$PROFILES"
+
+tag=; workers=; max_connections=; mode=
+carry_forward
+check "re-run keeps the tag"      test "$tag" = aabbccddeeff00112233445566778899
+check "re-run keeps the workers"  test "$workers" = 2
+check "re-run keeps the cap"      test "$max_connections" = 8192
+check "re-run keeps the mode"     test "$mode" = websocket
+
+tag=ffffffffffffffffffffffffffffffff; workers=9; max_connections=; mode=
+carry_forward
+check "a flag beats the carry"    test "$workers" = 9
+check "a flag beats the tag"      test "$tag" = ffffffffffffffffffffffffffffffff
+
+# A fresh host has none of those files: the defaults must be 0, not empty.
+TAG_DROPIN="$work/none.conf"; MTPROXY_ENV="$work/none.env"; PROFILES="$work/none.json"
+tag=; workers=; max_connections=; mode=
+carry_forward
+check "fresh install defaults"    test "$workers,$max_connections,$tag,$mode" = "0,0,,"
+
 printf '\n  %d checks passed\n\n' "$ok"

@@ -25,7 +25,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/slowriverr/WebMTProxy/main/i
 <div dir="rtl">
 
 کل نصب همین است. دامنه و ایمیل را می‌پرسد، همه‌چیز را بیلد می‌کند، گواهی TLS
-می‌گیرد و در پایان لینک `t.me/webproxy` و کد QR را تحویل می‌دهد.
+می‌گیرد و در پایان لینک `t.me/webproxy` را تحویل می‌دهد.
 
 ---
 
@@ -160,7 +160,7 @@ $ sudo webmtproxy
 | `webmtproxy -M N [-C N]` | ورکرهای MTProxy (`0` = تک‌پروسه) و سقف اتصال (`0` = بدون سقف) |
 | `webmtproxy restart` | ری‌استارت همه سرویس‌ها |
 | `webmtproxy logs` | دنبال‌کردن همه لاگ‌ها |
-| `webmtproxy update` | گرفتن آخرین نسخه و بیلد مجدد |
+| `webmtproxy update` | گرفتن آخرین نسخه و بیلد مجدد، با حفظ تنظیمات فعلی |
 | `webmtproxy uninstall [--purge]` | حذف کامل |
 
 `uninstall` بدون `--purge` مسیرهای `/srv/tproxy-site` و `/var/lib/caddy` را نگه

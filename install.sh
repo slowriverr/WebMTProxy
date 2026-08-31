@@ -13,6 +13,9 @@ CHECKOUT=/opt/tproxy-server
 HOME_DIR=/opt/webmtproxy
 DEFAULT_SITE=/opt/webmtproxy-site
 LOG=/var/log/webmtproxy-install.log
+PROFILES=/etc/tproxy-server/profiles.json
+MTPROXY_ENV=/etc/mtproxy/mtproxy.env
+TAG_DROPIN=/etc/systemd/system/mtproxy.service.d/tag.conf
 
 SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd -P)" || SELF_DIR=/nonexistent
 # Where `webmtproxy update` and the piped one-liner pull from. Point this at
@@ -21,7 +24,7 @@ REPO="${WEBMTPROXY_REPO:-$(git -C "$SELF_DIR" remote get-url origin 2>/dev/null 
 	echo https://github.com/slowriverr/WebMTProxy)}"
 
 domain=; email=; secret=; tag=; site_dir=; site_upstream=
-workers=0; max_connections=0; assume_yes=0; verbose=0
+workers=; max_connections=; mode=; assume_yes=0; verbose=0
 
 if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
 	B=$'\e[1m'; D=$'\e[2m'; R=$'\e[0m'
@@ -55,6 +58,7 @@ usage() {
 	        --site-upstream URL    proxy the cover website to http://127.0.0.1:PORT
 	        --workers N            MTProxy workers, 0 = single process (default 0)
 	        --max-connections N    MTProxy connection cap, 0 = none (default 0)
+	                               on a re-install both keep their current value
 	    -y, --yes                  no prompts, no confirmation
 	    -v, --verbose              stream the build output instead of a spinner
 	    -h, --help                 this text
@@ -105,6 +109,28 @@ prepare_site() {
 	CSS
 	chmod 0644 "$DEFAULT_SITE/index.html" "$DEFAULT_SITE/styles.css"
 }
+
+# `webmtproxy update` re-runs this script, and the upstream deploy rewrites
+# profiles.json, mtproxy.env and the units from scratch — so everything the
+# panel manages is lost unless it is read back first and re-applied after.
+# An explicit flag always wins over what is already installed.
+carry_forward() {
+	if [[ -z "$tag" && -f "$TAG_DROPIN" ]]; then
+		tag="$(sed -n 's/^Environment=MTPROXY_TAG=//p' "$TAG_DROPIN")"
+	fi
+	if [[ -f "$MTPROXY_ENV" ]]; then
+		[[ -n "$workers" ]] || workers="$(sed -n 's/^MTPROXY_WORKERS=//p' "$MTPROXY_ENV")"
+		[[ -n "$max_connections" ]] ||
+			max_connections="$(sed -n 's/^MTPROXY_MAX_CONNECTIONS=//p' "$MTPROXY_ENV")"
+	fi
+	if [[ -f "$PROFILES" ]]; then
+		mode="$(sed -n 's/.*"carrier_mode"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$PROFILES")"
+	fi
+	workers="${workers:-0}"; max_connections="${max_connections:-0}"
+}
+
+# The carrier mode is not an install-time option; it only ever needs restoring.
+restore_mode() { [[ -z "$mode" ]] || /usr/local/bin/webmtproxy mode "$mode"; }
 
 fetch_upstream() {
 	rm -rf "$CHECKOUT"
@@ -176,7 +202,7 @@ fail() {
 	exit 1
 }
 
-STEP=0; TOTAL=9
+STEP=0; TOTAL=10
 step() {
 	local msg=$1; shift
 	STEP=$((STEP + 1))
@@ -256,6 +282,8 @@ if [[ ! -f "$SELF_DIR/webmtproxy" ]]; then
 fi
 
 # ── input ────────────────────────────────────────────────────────────────────
+
+carry_forward
 
 [[ -n "$domain" ]] || prompt domain "Domain      " "(proxy.example.com)" valid_domain
 [[ -n "$email"  ]] || prompt email  "ACME e-mail " "(you@example.com)"    valid_email
@@ -355,6 +383,7 @@ step "Building MTProxy, relay and TLS" run_upstream
 step "Installing the webmtproxy panel" install_panel
 step "Applying the MTProxy limits"      /usr/local/bin/webmtproxy -M "$workers" -C "$max_connections"
 step "Configuring the sponsor channel" /usr/local/bin/webmtproxy sponsor "${tag:-off}"
+step "Restoring the carrier mode"      restore_mode
 step "Verifying services"              verify
 
 # ── result ───────────────────────────────────────────────────────────────────
@@ -365,7 +394,6 @@ printf '\n'
 printf '  %s╭────────────────────────────────────────────────╮%s\n' "$GRN" "$R"
 printf '  %s│%s  %sWEB proxy is up%s                               %s│%s\n' "$GRN" "$R" "$B" "$R" "$GRN" "$R"
 printf '  %s╰────────────────────────────────────────────────╯%s\n\n' "$GRN" "$R"
-command -v qrencode >/dev/null && { qrencode -t UTF8 -m 2 "$link"; printf '\n'; }
 printf '  %s%s%s\n\n' "$CYN" "$link" "$R"
 printf '  %sHostname%s  %s\n' "$D" "$R" "$domain"
 printf '  %sSecret%s    %s\n' "$D" "$R" "$secret"

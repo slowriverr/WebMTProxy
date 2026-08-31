@@ -23,7 +23,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/slowriverr/WebMTProxy/main/i
 ```
 
 Это вся установка. Скрипт спросит домен и e-mail, всё соберёт, получит
-TLS-сертификат и выдаст ссылку `t.me/webproxy` вместе с QR-кодом.
+TLS-сертификат и выдаст ссылку `t.me/webproxy`.
 
 ---
 
@@ -141,7 +141,7 @@ $ sudo webmtproxy
 | `webmtproxy -M N [-C N]` | воркеры MTProxy (`0` — один процесс) и лимит подключений (`0` — без лимита) |
 | `webmtproxy restart` | перезапустить все сервисы |
 | `webmtproxy logs` | следить за всеми журналами |
-| `webmtproxy update` | получить свежую версию и пересобрать |
+| `webmtproxy update` | получить свежую версию и пересобрать, сохранив настройки |
 | `webmtproxy uninstall [--purge]` | удалить всё |
 
 Без `--purge` удаление сохраняет `/srv/tproxy-site` и `/var/lib/caddy` —

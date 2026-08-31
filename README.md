@@ -23,7 +23,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/slowriverr/WebMTProxy/main/i
 ```
 
 That is the whole install. It asks for a domain and an e-mail, builds everything,
-gets a TLS certificate, and hands you a `t.me/webproxy` link and a QR code.
+gets a TLS certificate, and hands you a `t.me/webproxy` link.
 
 ---
 
@@ -140,7 +140,7 @@ $ sudo webmtproxy
 | `webmtproxy -M N [-C N]` | MTProxy workers (`0` = a single process) and the connection cap (`0` = no limit) |
 | `webmtproxy restart` | restart every service |
 | `webmtproxy logs` | follow all journals |
-| `webmtproxy update` | pull the latest and rebuild |
+| `webmtproxy update` | pull the latest and rebuild, keeping the current settings |
 | `webmtproxy uninstall [--purge]` | remove everything |
 
 `uninstall` keeps `/srv/tproxy-site` and `/var/lib/caddy` unless you pass
