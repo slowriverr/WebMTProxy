@@ -1,8 +1,8 @@
 <h1 align="center">WebMTProxy</h1>
 
 <p align="center">
-  Новый <b>WEB proxy</b> Telegram одной командой —
-  с CLI-панелью и поддержкой <b>спонсорского канала</b>.
+  Новый <b>WEB proxy</b> Telegram со <b>спонсорским каналом</b>,
+  одной командой — и CLI-панель, которая всем этим управляет.
 </p>
 
 <p align="center">
@@ -12,9 +12,10 @@
 </p>
 
 <p align="center">
+  <img alt="sponsor channel" src="https://img.shields.io/badge/sponsor%20channel-supported-2CA5E0?logo=telegram&logoColor=white">
   <img alt="shell" src="https://img.shields.io/badge/shell-bash-4EAA25?logo=gnubash&logoColor=white">
   <img alt="platform" src="https://img.shields.io/badge/platform-Debian%20%7C%20Ubuntu%20x86__64-A81D33?logo=debian&logoColor=white">
-  <img alt="tests" src="https://img.shields.io/badge/tests-65%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-89%20passing-brightgreen">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-blue">
 </p>
 
@@ -25,19 +26,24 @@ bash <(curl -fsSL https://raw.githubusercontent.com/slowriverr/WebMTProxy/main/i
 Это вся установка. Скрипт спросит домен и e-mail, всё соберёт, получит
 TLS-сертификат и выдаст ссылку `t.me/webproxy`.
 
+> ### ⭐ Спонсорский канал — из коробки
+> Подключите свой тег [@MTProxybot](https://t.me/MTProxybot), и ваш канал
+> предлагается всем, кто подключается — одна команда, в любой момент:
+> `sudo webmtproxy sponsor <TAG>`
+
 ---
 
 ## Что вы получаете
 
+- **Спонсорский канал.** Подключите рекламный тег
+  [@MTProxybot](https://t.me/MTProxybot), и ваш канал предлагается всем, кто
+  подключается. По умолчанию выключено, включается одной командой.
 - **Одна команда.** Домен, e-mail, секрет, сайт-прикрытие, TLS, файрвол, сервисы.
 - **Падает рано, а не поздно.** Root, архитектура, systemd, действительно ли
   A-запись указывает сюда, свободны ли порты 80 и 443 — всё проверяется до того,
   как что-либо будет изменено.
 - **Работает с первого раза.** Ошибка прав доступа, из-за которой прокси иначе не
   запускается вовсе, исправляется во время установки.
-- **Спонсорский канал.** Можно подключить рекламный тег
-  [@MTProxybot](https://t.me/MTProxybot) — у upstream-установщика такого флага
-  нет вовсе. По умолчанию выключено, включается одной командой.
 - **Настоящая панель.** Состояние сервисов, срок сертификата, живые подключения,
   смена секрета, логи, обновление, чистое удаление.
 - **Никакого скрытого состояния.** Панель читает всё из рабочих конфигов —

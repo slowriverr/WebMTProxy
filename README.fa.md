@@ -1,8 +1,8 @@
 <h1 align="center">WebMTProxy</h1>
 
 <p align="center">
-  پروکسی جدید تلگرام (<b>WEB proxy</b>) با یک دستور —
-  به‌همراه پنل خط فرمان و پشتیبانی از <b>کانال اسپانسر</b>.
+  پروکسی جدید تلگرام (<b>WEB proxy</b>) به‌همراه <b>کانال اسپانسر</b>،
+  با یک دستور — و یک پنل خط فرمان که همه‌چیز را می‌گرداند.
 </p>
 
 <p align="center">
@@ -12,9 +12,10 @@
 </p>
 
 <p align="center">
+  <img alt="sponsor channel" src="https://img.shields.io/badge/sponsor%20channel-supported-2CA5E0?logo=telegram&logoColor=white">
   <img alt="shell" src="https://img.shields.io/badge/shell-bash-4EAA25?logo=gnubash&logoColor=white">
   <img alt="platform" src="https://img.shields.io/badge/platform-Debian%20%7C%20Ubuntu%20x86__64-A81D33?logo=debian&logoColor=white">
-  <img alt="tests" src="https://img.shields.io/badge/tests-65%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-89%20passing-brightgreen">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-blue">
 </p>
 
@@ -27,19 +28,23 @@ bash <(curl -fsSL https://raw.githubusercontent.com/slowriverr/WebMTProxy/main/i
 کل نصب همین است. دامنه و ایمیل را می‌پرسد، همه‌چیز را بیلد می‌کند، گواهی TLS
 می‌گیرد و در پایان لینک `t.me/webproxy` را تحویل می‌دهد.
 
+> ### ⭐ کانال اسپانسر، همین‌جا
+> تگ [@MTProxybot](https://t.me/MTProxybot) خودت را وصل کن تا کانالت به همه‌ی
+> کسانی که وصل می‌شوند پیشنهاد شود — یک دستور، هر وقت خواستی:
+> `sudo webmtproxy sponsor <TAG>`
+
 ---
 
 ## چه چیزی می‌گیری
 
+- **کانال اسپانسر.** تگ تبلیغاتی [@MTProxybot](https://t.me/MTProxybot) را وصل کن
+  تا کانالت به همه‌ی کسانی که وصل می‌شوند پیشنهاد شود. پیش‌فرض خاموش، با یک دستور روشن.
 - **یک دستور.** دامنه، ایمیل، سکرت، سایت پوششی، TLS، فایروال و سرویس‌ها.
 - **زود خطا می‌دهد، نه دیر.** روت بودن، معماری، systemd، اینکه رکورد A واقعاً به
   همین سرور اشاره می‌کند و اینکه پورت‌های ۸۰ و ۴۴۳ آزادند — همه پیش از دست‌زدن
   به چیزی بررسی می‌شوند.
 - **بار اول کار می‌کند.** یک باگ دسترسی که در حالت عادی پروکسی را همان اول
   از کار می‌اندازد، حین نصب اصلاح می‌شود.
-- **کانال اسپانسر.** می‌توانی تگ تبلیغاتی [@MTProxybot](https://t.me/MTProxybot)
-  را وصل کنی — چیزی که نصب‌کننده‌ی اصلی اصلاً فلگی برایش ندارد. پیش‌فرض خاموش،
-  با یک دستور روشن.
 - **یک پنل واقعی.** سلامت سرویس‌ها، اعتبار گواهی، اتصال‌های زنده، چرخش سکرت،
   لاگ‌ها، آپدیت و حذف تمیز.
 - **بدون state پنهان.** پنل همه‌چیز را از فایل‌های پیکربندی زنده می‌خواند؛ چیزی

@@ -1,8 +1,8 @@
 <h1 align="center">WebMTProxy</h1>
 
 <p align="center">
-  Telegram's new <b>WEB proxy</b>, installed in one command —
-  with a CLI panel and <b>sponsor channel</b> support.
+  Telegram's new <b>WEB proxy</b> with a <b>sponsor channel</b>,
+  installed in one command — and a CLI panel that runs the whole thing.
 </p>
 
 <p align="center">
@@ -12,9 +12,10 @@
 </p>
 
 <p align="center">
+  <img alt="sponsor channel" src="https://img.shields.io/badge/sponsor%20channel-supported-2CA5E0?logo=telegram&logoColor=white">
   <img alt="shell" src="https://img.shields.io/badge/shell-bash-4EAA25?logo=gnubash&logoColor=white">
   <img alt="platform" src="https://img.shields.io/badge/platform-Debian%20%7C%20Ubuntu%20x86__64-A81D33?logo=debian&logoColor=white">
-  <img alt="tests" src="https://img.shields.io/badge/tests-65%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-89%20passing-brightgreen">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-blue">
 </p>
 
@@ -25,18 +26,23 @@ bash <(curl -fsSL https://raw.githubusercontent.com/slowriverr/WebMTProxy/main/i
 That is the whole install. It asks for a domain and an e-mail, builds everything,
 gets a TLS certificate, and hands you a `t.me/webproxy` link.
 
+> ### ⭐ Sponsor channel, built in
+> Attach your [@MTProxybot](https://t.me/MTProxybot) tag and your channel is
+> offered to everyone who connects — one command, any time:
+> `sudo webmtproxy sponsor <TAG>`
+
 ---
 
 ## What you get
 
+- **Sponsor channel.** Attach an [@MTProxybot](https://t.me/MTProxybot) ad tag and
+  your channel is offered to everyone who connects. Off by default, one command on.
 - **One command.** Domain, e-mail, secret, cover site, TLS, firewall, services.
 - **Fails early, not late.** Root, architecture, systemd, whether your A record
   actually points here, whether ports 80/443 are free — all checked before
   anything is touched.
 - **Works on the first try.** A permissions bug that otherwise leaves the proxy
   dead on arrival is patched during install.
-- **Sponsor channel.** Attach an [@MTProxybot](https://t.me/MTProxybot) ad tag —
-  the upstream deploy has no flag for it. Off by default, one command to change.
 - **A real panel.** Service health, TLS expiry, live connections, secret rotation,
   logs, updates, clean uninstall.
 - **No hidden state.** The panel reads everything from the live config files.
