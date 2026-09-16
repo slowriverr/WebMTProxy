@@ -192,8 +192,8 @@ Clients pick the new mode up on their next session; nothing needs reinstalling.
 
 Your hostname stays an ordinary HTTPS site. Only a request carrying the capability
 derived from the hostname and the secret reaches the proxy; everything else gets
-the cover site. The installer drops a placeholder there, but a placeholder is a
-tell — point `--site-dir` at something plausible.
+the cover site. The installer picks one of five small templates in `sites/` at random; they are
+public, so pointing `--site-dir` at your own site is still better.
 
 ```bash
 sudo ./install.sh -d proxy.example.com -e you@example.com --site-dir /opt/my-site

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>tidyconf — a formatter for config files</title><link rel="stylesheet" href="/styles.css"></head>
+<body>
+<nav class="wrap">
+  <a class="logo" href="#"><span>{ }</span> tidyconf</a>
+  <div><a href="#usage">Docs</a><a href="#features">Features</a><a href="#changelog">Changelog</a></div>
+</nav>
+
+<header class="wrap hero">
+  <p class="badge">v1.8.2 · released this month</p>
+  <h1>Consistent config files,<br><span>without thinking about it.</span></h1>
+  <p class="lede">tidyconf formats INI, TOML and YAML the same way every time. One static binary, no runtime, safe to run in CI.</p>
+  <div class="install"><span class="prompt">$</span> brew install tidyconf</div>
+</header>
+
+<section class="wrap">
+  <div class="term">
+    <div class="bar"><i></i><i></i><i></i><span>config.toml</span></div>
+<pre><span class="c"># before</span>
+[server]
+<span class="del">port=8080</span>
+<span class="del">  host =   "0.0.0.0"</span>
+
+<span class="c"># after: tidyconf -w config.toml</span>
+[server]
+<span class="add">host = "0.0.0.0"</span>
+<span class="add">port = 8080</span></pre>
+  </div>
+</section>
+
+<section id="features" class="wrap features">
+  <div><h3>Deterministic</h3><p>Same input, same output, on every machine. Keys are sorted, whitespace normalised, comments kept where you put them.</p></div>
+  <div><h3>Fast</h3><p>Formats a 5,000-file monorepo in under a second. Parsing is streaming, so huge files don't blow up memory.</p></div>
+  <div><h3>CI-friendly</h3><p><code>--check</code> exits non-zero with a unified diff, so reviewers see exactly what's off.</p></div>
+</section>
+
+<section id="usage" class="wrap">
+  <h2>Usage</h2>
+<pre class="code">tidyconf config.toml          <span class="c"># print formatted to stdout</span>
+tidyconf -w config.toml       <span class="c"># rewrite in place</span>
+tidyconf --check **/*.yaml    <span class="c"># exit 1 if anything is unformatted</span>
+tidyconf --indent 4 app.ini   <span class="c"># override the default indent</span></pre>
+</section>
+
+<section id="changelog" class="wrap log">
+  <h2>Recent changes</h2>
+  <ul>
+    <li><b>1.8.2</b> Preserve trailing comments on array items.</li>
+    <li><b>1.8.0</b> YAML anchors and aliases are no longer expanded.</li>
+    <li><b>1.7.0</b> New <code>--indent</code> flag; <code>.tidyconf</code> file support.</li>
+  </ul>
+</section>
+
+<footer class="wrap">MIT licensed · maintained in spare time, issues welcome</footer>
+</body>
+</html>

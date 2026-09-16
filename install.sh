@@ -96,22 +96,15 @@ prompt() {
 	printf -v "$var" '%s' "$value"
 }
 
+# One of sites/* at random, so installs don't all share the same cover page.
 prepare_site() {
 	[[ -z "$site_dir$site_upstream" ]] || return 0
 	[[ ! -f /srv/tproxy-site/index.html ]] || return 0
+	local sites=("$SELF_DIR"/sites/*/)
+	rm -rf "$DEFAULT_SITE"
 	install -d -m 0755 "$DEFAULT_SITE"
-	cat > "$DEFAULT_SITE/index.html" <<-'HTML'
-		<!doctype html>
-		<html lang="en">
-		<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-		<title>Notes</title><link rel="stylesheet" href="/styles.css"></head>
-		<body><h1>Notes</h1><p>Personal notes and projects.</p></body>
-		</html>
-	HTML
-	cat > "$DEFAULT_SITE/styles.css" <<-'CSS'
-		body{font-family:system-ui,sans-serif;max-width:40rem;margin:4rem auto;padding:0 1rem;line-height:1.6}
-	CSS
-	chmod 0644 "$DEFAULT_SITE/index.html" "$DEFAULT_SITE/styles.css"
+	cp -a "${sites[RANDOM % ${#sites[@]}]}." "$DEFAULT_SITE/"
+	chmod -R a+rX "$DEFAULT_SITE"
 }
 
 # `webmtproxy update` re-runs this script, and the upstream deploy rewrites
@@ -344,7 +337,7 @@ fi
 if   [[ -n "$site_dir"      ]]; then site_label="$site_dir"
 elif [[ -n "$site_upstream" ]]; then site_label="$site_upstream (upstream)"
 elif [[ -f /srv/tproxy-site/index.html ]]; then site_label="/srv/tproxy-site (existing)"
-else site_label="$DEFAULT_SITE (generated placeholder)"; fi
+else site_label="$DEFAULT_SITE (random template)"; fi
 
 printf '\n'
 printf '  %sDomain%s      %s\n' "$D" "$R" "$domain"

@@ -222,4 +222,13 @@ tag=; workers=; max_connections=; mode=
 carry_forward
 check "fresh install defaults"    test "$workers,$max_connections,$tag,$mode" = "0,0,,"
 
+# Cover templates must survive the relay's response policy (see `webmtproxy site`).
+for d in "$SELF_DIR"/sites/*/; do
+	n="$(basename "$d")"
+	check "$n has an index.html"      test -f "$d/index.html"
+	check "$n has no inline <style>"  no grep -qE '<style[ >]' "$d/index.html"
+	check "$n has no inline <script>" no grep -qE '<script' "$d/index.html"
+	check "$n loads nothing external" no grep -qE '(src|href)="https?://' "$d/index.html"
+done
+
 printf '\n  %d checks passed\n\n' "$ok"

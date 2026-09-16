@@ -1,0 +1,33 @@
+:root{--bg:#fbfaf6;--ink:#23261f;--muted:#737a6b;--accent:#4f7a4a;--line:#e4e2d8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Charter,"Bitstream Charter","Iowan Old Style",Georgia,serif;font-size:1.075rem;line-height:1.7}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:44rem;margin:0 auto;padding-inline:1.25rem}
+.top{display:flex;justify-content:space-between;align-items:center;padding-block:2rem}
+.brand{display:flex;align-items:center;gap:.6rem;font-weight:700;font-size:1.2rem}
+.brand svg{width:34px;height:34px;fill:none;stroke:var(--accent);stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+nav a{margin-left:1.25rem;font-family:system-ui,sans-serif;font-size:.9rem;color:var(--muted)}
+nav a:hover{color:var(--accent)}
+.featured{padding-block:1rem 3rem;border-bottom:1px solid var(--line)}
+.map{width:100%;height:auto;display:block;margin-bottom:1.5rem}
+.map .paper{fill:#eef0e4}
+.map .contour{fill:none;stroke:#cfd4bd;stroke-width:1.5}
+.map .water{fill:none;stroke:#a9c6cf;stroke-width:10;stroke-linecap:round}
+.map .route{fill:none;stroke:#c2613a;stroke-width:3;stroke-dasharray:2 8;stroke-linecap:round}
+.map .pin{fill:var(--bg);stroke:#c2613a;stroke-width:3}
+.meta,time,.post span{font-family:system-ui,sans-serif;font-size:.8rem;color:var(--muted);letter-spacing:.02em}
+h1{font-size:clamp(1.9rem,4.5vw,2.6rem);line-height:1.15;margin:.25rem 0 1rem}
+h1 a:hover{color:var(--accent)}
+.more{display:inline-block;margin-top:.5rem;color:var(--accent);font-family:system-ui,sans-serif;font-size:.9rem;font-weight:600}
+h2{font-family:system-ui,sans-serif;font-size:.75rem;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);margin:2.5rem 0 1rem}
+.post{display:grid;grid-template-columns:4.5rem 1fr auto;gap:1rem;padding-block:1.1rem;border-bottom:1px solid var(--line)}
+.post time{padding-top:.3rem}
+.post h3{margin:0;font-size:1.15rem}
+.post p{margin:.2rem 0 0;color:var(--muted);font-size:.98rem}
+.post span{padding-top:.3rem;white-space:nowrap}
+.post:hover h3{color:var(--accent)}
+.about{margin-block:2rem;padding:1.25rem 1.5rem;background:#f0efe6;border-radius:12px}
+.about h2{margin-top:0}
+.about p{margin:0}
+footer{padding-block:2rem 3rem;color:var(--muted);font-size:.85rem}
+@media (max-width:34rem){.post{grid-template-columns:1fr}.post span{display:none}}
