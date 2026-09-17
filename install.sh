@@ -166,6 +166,10 @@ run_upstream() {
 	elif [[ -n "$site_dir"      ]]; then args+=(--site-dir "$site_dir")
 	elif [[ ! -f /srv/tproxy-site/index.html ]]; then args+=(--site-dir "$DEFAULT_SITE")
 	fi
+	# Upstream gives a fresh install a random base path; start at the root so the
+	# plain host + hex link works everywhere, and let `webmtproxy path` add one.
+	# A re-install passes nothing, so upstream keeps whatever path is configured.
+	[[ -f /etc/tproxy-server/config.json ]] || args+=(--base-path none)
 	"$CHECKOUT/deploy/install.sh" "${args[@]}"
 }
 
@@ -181,7 +185,13 @@ install_panel() {
 }
 
 verify() {
-	local unit
+	local unit i
+	# The steps before this restart mtproxy and the relay; readyz needs a few
+	# seconds to come back, the same wait upstream's deploy script allows.
+	for i in {1..30}; do
+		curl --fail --silent --output /dev/null --max-time 2 http://127.0.0.1:8081/readyz && break
+		sleep 1
+	done
 	for unit in mtproxy tproxy-server caddy; do
 		systemctl is-active --quiet "$unit" ||
 			{ systemctl --no-pager --full status "$unit" || true; return 1; }
@@ -377,7 +387,7 @@ step "Verifying services"              verify
 
 # ── result ───────────────────────────────────────────────────────────────────
 
-link="https://t.me/webproxy?server=${domain}&secret=${secret}"
+link="$(/usr/local/bin/webmtproxy link)"
 
 printf '\n'
 printf '  %s╭────────────────────────────────────────────────╮%s\n' "$GRN" "$R"
@@ -385,7 +395,7 @@ printf '  %s│%s  %sWEB proxy is up%s                               %s│%s\n' 
 printf '  %s╰────────────────────────────────────────────────╯%s\n\n' "$GRN" "$R"
 printf '  %s%s%s\n\n' "$CYN" "$link" "$R"
 printf '  %sHostname%s  %s\n' "$D" "$R" "$domain"
-printf '  %sSecret%s    %s\n' "$D" "$R" "$secret"
+printf '  %sSecret%s    %s\n' "$D" "$R" "${link##*secret=}"
 printf '  %sWebsite%s   https://%s/\n' "$D" "$R" "$domain"
 printf '  %sPanel%s     %swebmtproxy%s for the panel, %swebmtproxy help%s for every command\n\n' \
 	"$D" "$R" "$B" "$R" "$B" "$R"

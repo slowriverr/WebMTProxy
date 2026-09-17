@@ -48,7 +48,27 @@ read_limits() {
 	[[ "$c" =~ ^[1-9] ]] && printf ', max %s connections' "$c"
 	printf '\n'
 }
-tg_link()     { printf 'https://t.me/webproxy?server=%s&secret=%s' "$(read_domain)" "$(read_secret)"; }
+read_base_path() { sed -n 's/.*"base_path": *"\([^"]*\)".*/\1/p' "$CONFIG"; }
+
+# Since upstream's /path support a fresh install serves the carrier under a
+# random slug, and the client-facing secret becomes base64url(0x70 + raw
+# secret). A plain host + hex link points at the cover site and never connects.
+# Root installs (no base_path) keep the plain form. Mirrors web_proxy_secret()
+# in upstream's deploy/install.sh.
+client_server() {
+	local base; base="$(read_base_path)"
+	printf '%s' "$(read_domain)${base:+/$base}"
+}
+client_secret() {
+	local secret; secret="$(read_secret)"
+	if [[ -z "$(read_base_path)" ]]; then printf '%s' "$secret"; return; fi
+	{ printf '\x70'; printf "$(printf %s "$secret" | sed 's/../\\x&/g')"; } |
+		base64 | tr '+/' '-_' | tr -d '=\n'
+}
+tg_link() {
+	local server; server="$(client_server)"
+	printf 'https://t.me/webproxy?server=%s&secret=%s' "${server//\//%2F}" "$(client_secret)"
+}
 
 gen_secret() { openssl rand -hex 16 2>/dev/null || od -An -tx1 -N16 /dev/urandom | tr -d ' \n'; }
 
@@ -143,7 +163,8 @@ panel() {
 	fi
 
 	head2 ACCESS
-	field secret "$secret"
+	field server "$(client_server)"
+	field secret "$(client_secret)"
 	field email "$(read_email)"
 	field sponsor "$(read_tag || printf '%snone%s' "$D" "$R")"
 	field carrier "$(cmd_mode)"
@@ -151,7 +172,7 @@ panel() {
 	printf '\n    %s%s%s\n' "$CYN" "$link" "$R"
 
 	printf '\n  %scommands%s  link · qr · rotate-secret · sponsor · site · mode · domain\n' "$D" "$R"
-	printf '            -M N · -C N · restart · logs · update · uninstall · help\n\n'
+	printf '            path · -M N · -C N · restart · logs · update · uninstall · help\n\n'
 }
 
 # ── commands ─────────────────────────────────────────────────────────────────
@@ -375,6 +396,43 @@ cmd_domain() {
 	printf '  %sCaddy needs a minute to issue the certificate for %s%s\n\n' "$D" "$new" "$R"
 }
 
+# The carrier can live under a path (https://host/SLUG) so a scan of the bare
+# host finds only the cover site. Clients without path support cannot use such
+# a link, which is why installs start at the root. Caddy proxies every path to
+# the relay, so the relay config is the only thing to change.
+cmd_path() {
+	local new=${1:-} tmp
+	if [[ -z "$new" ]]; then
+		printf '%s\n' "$(read_base_path | grep . || echo none)"
+		return 0
+	fi
+
+	case "$new" in
+		none)   new= ;;
+		random) new="$(od -An -tx1 -N8 /dev/urandom | tr -d ' \n')" ;;
+		*)      new="${new#/}"; new="${new%/}" ;;
+	esac
+	[[ -z "$new" || "$new" =~ ^[A-Za-z0-9][A-Za-z0-9_-]*(/[A-Za-z0-9][A-Za-z0-9_-]*)*$ ]] ||
+		die "path segments must match [A-Za-z0-9][A-Za-z0-9_-]* joined by /"
+	((${#new} <= 128)) || die "path must be at most 128 characters"
+	[[ "$new" != "$(read_base_path)" ]] || die "that is already the path"
+
+	# Configs written before upstream's path support have no key at all.
+	tmp="$(mktemp "$CONFIG.XXXXXX")"
+	if grep -q '"base_path"' "$CONFIG"; then
+		sed "s|\"base_path\"[[:space:]]*:[[:space:]]*\"[^\"]*\"|\"base_path\": \"$new\"|" "$CONFIG" > "$tmp"
+	else
+		sed "s|\(\"public_hostname\"[[:space:]]*:[[:space:]]*\"[^\"]*\",\)|\1 \"base_path\": \"$new\",|" "$CONFIG" > "$tmp"
+	fi
+	grep -qF "\"base_path\": \"$new\"" "$tmp" || { rm -f "$tmp"; die "could not rewrite $CONFIG"; }
+	chown root:tproxy "$tmp"; chmod 0640 "$tmp"; mv -f "$tmp" "$CONFIG"
+
+	systemctl restart tproxy-server
+	ok "path set to ${new:-none}"
+	warn "every existing link is now dead — share the new one"
+	printf '\n  %s%s%s\n\n' "$CYN" "$(tg_link)" "$R"
+}
+
 cmd_restart() {
 	local unit
 	for unit in mtproxy tproxy-server caddy; do
@@ -473,6 +531,8 @@ usage() {
 	                               websocket-lanes
 	    webmtproxy domain [HOST]   show or change the hostname (--force to skip
 	                               the DNS check)
+	    webmtproxy path [P]        show or set the path the proxy lives under:
+	                               none, random, or your own (e.g. abc/xyz)
 	    webmtproxy -M N [-C N]     MTProxy workers (0 = a single process) and
 	                               the connection cap (0 = no limit)
 	    webmtproxy restart         restart mtproxy, relay and Caddy
@@ -495,6 +555,7 @@ case "${1:-panel}" in
 	site)           require_root site; require_install; cmd_site "${2:-}" ;;
 	mode)           require_root mode; require_install; cmd_mode "${2:-}" ;;
 	domain)         require_root domain; require_install; cmd_domain "${2:-}" "${3:-}" ;;
+	path)           require_root path; require_install; cmd_path "${2:-}" ;;
 	-M|-C)          require_root "$@"; require_install; cmd_limits "$@" ;;
 	restart)        require_root restart; require_install; cmd_restart ;;
 	logs)           require_root logs; cmd_logs ;;

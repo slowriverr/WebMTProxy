@@ -15,7 +15,7 @@
   <img alt="sponsor channel" src="https://img.shields.io/badge/sponsor%20channel-supported-2CA5E0?logo=telegram&logoColor=white">
   <img alt="shell" src="https://img.shields.io/badge/shell-bash-4EAA25?logo=gnubash&logoColor=white">
   <img alt="platform" src="https://img.shields.io/badge/platform-Debian%20%7C%20Ubuntu%20x86__64-A81D33?logo=debian&logoColor=white">
-  <img alt="tests" src="https://img.shields.io/badge/tests-89%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-119%20passing-brightgreen">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-blue">
 </p>
 
@@ -147,7 +147,7 @@ $ sudo webmtproxy
     https://t.me/webproxy?server=proxy.example.com&secret=dd7f3c1e…
 
   commands  link · qr · rotate-secret · sponsor · site · mode · domain
-            -M N · -C N · restart · logs · update · uninstall · help
+            path · -M N · -C N · restart · logs · update · uninstall · help
 ```
 
 <div dir="rtl">
@@ -162,6 +162,7 @@ $ sudo webmtproxy
 | `webmtproxy site [DIR]` | نمایش سایت پوششی فعلی، یا پابلیش کردن `DIR` به‌جای آن |
 | `webmtproxy mode [MODE]` | مود کریر: `https`، `https-lanes`، `websocket`، `websocket-lanes` |
 | `webmtproxy domain [HOST]` | نمایش یا تعویض دامنه، و چاپ لینک جدید |
+| `webmtproxy path [P]` | نمایش یا تنظیم مسیر پروکسی: `none` (پیش‌فرض)، `random` یا مسیر دلخواه |
 | `webmtproxy -M N [-C N]` | ورکرهای MTProxy (`0` = تک‌پروسه) و سقف اتصال (`0` = بدون سقف) |
 | `webmtproxy restart` | ری‌استارت همه سرویس‌ها |
 | `webmtproxy logs` | دنبال‌کردن همه لاگ‌ها |

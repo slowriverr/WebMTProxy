@@ -194,6 +194,28 @@ check "rewrites the caddy dropin" grep -qx 'Environment=TPROXY_HOSTNAME=new.exam
 check "keeps the ACME e-mail"     test "$(read_email)" = you@example.com
 check "link follows the domain"   test "$(tg_link)" = "https://t.me/webproxy?server=new.example.com&secret=$new"
 
+# Upstream's default since /path support: slug in the server, secret encoded
+# as base64url(0x70 + raw bytes). Expected value computed outside bash.
+printf '{\n  "public_hostname": "new.example.com",\n  "base_path": "ab/cd"\n}\n' > "$CONFIG"
+check "link carries the base path" test "$(tg_link)" = \
+	"https://t.me/webproxy?server=new.example.com%2Fab%2Fcd&secret=cN0RERERERERERERERERERER"
+
+# `webmtproxy path`: none is the install default, random and custom set a slug.
+cmd_path none >/dev/null
+check "path none clears it"       test "$(cmd_path)" = none
+check "none gives the plain link" test "$(tg_link)" = "https://t.me/webproxy?server=new.example.com&secret=$new"
+check "rejects the same path"     fails cmd_path none
+cmd_path /my/path/ >/dev/null
+check "custom path trims slashes" test "$(read_base_path)" = my/path
+check "rejects a bad path"        fails cmd_path 'bad path'
+check "rejects a dot segment"     fails cmd_path ../etc
+cmd_path random >/dev/null
+check "random path is a slug"     grep -qE '"base_path": "[0-9a-f]{16}"' "$CONFIG"
+printf '{\n  "public_hostname": "new.example.com",\n  "listen": "127.0.0.1:8080"\n}\n' > "$CONFIG"
+cmd_path abc >/dev/null
+check "adds a missing key"        test "$(read_base_path)" = abc
+check "keeps the hostname"        test "$(read_domain)" = new.example.com
+
 
 # `webmtproxy update` re-runs install.sh, which is why anything the panel
 # manages has to survive a re-run instead of falling back to install defaults.

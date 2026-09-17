@@ -15,7 +15,7 @@
   <img alt="sponsor channel" src="https://img.shields.io/badge/sponsor%20channel-supported-2CA5E0?logo=telegram&logoColor=white">
   <img alt="shell" src="https://img.shields.io/badge/shell-bash-4EAA25?logo=gnubash&logoColor=white">
   <img alt="platform" src="https://img.shields.io/badge/platform-Debian%20%7C%20Ubuntu%20x86__64-A81D33?logo=debian&logoColor=white">
-  <img alt="tests" src="https://img.shields.io/badge/tests-89%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-119%20passing-brightgreen">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-blue">
 </p>
 
@@ -130,7 +130,7 @@ $ sudo webmtproxy
     https://t.me/webproxy?server=proxy.example.com&secret=dd7f3c1e…
 
   commands  link · qr · rotate-secret · sponsor · site · mode · domain
-            -M N · -C N · restart · logs · update · uninstall · help
+            path · -M N · -C N · restart · logs · update · uninstall · help
 ```
 
 | Command | What it does |
@@ -143,6 +143,7 @@ $ sudo webmtproxy
 | `webmtproxy site [DIR]` | show the live cover site, or publish `DIR` as it |
 | `webmtproxy mode [MODE]` | carrier transport: `https`, `https-lanes`, `websocket`, `websocket-lanes` |
 | `webmtproxy domain [HOST]` | show or change the hostname, then print the new link |
+| `webmtproxy path [P]` | show or set the path the proxy lives under: `none` (default), `random`, or your own |
 | `webmtproxy -M N [-C N]` | MTProxy workers (`0` = a single process) and the connection cap (`0` = no limit) |
 | `webmtproxy restart` | restart every service |
 | `webmtproxy logs` | follow all journals |
@@ -218,7 +219,7 @@ also warns about the things the response policy blocks: inline `<style>` and
 ./test_install.sh
 ```
 
-65 checks over input validation, the install-time patch, secret rotation, the
+119 checks over input validation, the install-time patch, secret rotation, the
 sponsor drop-in, site publishing, carrier mode and the hostname switch.
 Set `WEBMTPROXY_REPO` to point the bootstrap and `webmtproxy update` at a fork.
 
